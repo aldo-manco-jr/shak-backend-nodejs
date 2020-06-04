@@ -1,13 +1,45 @@
+
+/*
+    (joi)
+      Package che offre metodi per controllare l'integrità dei dati passati dall'utente nel form
+
+   (http-status-codes)
+      Enumerazione contenente tutti i possibili HTTP Status Code
+
+   (bcryptjs)
+      Package utile per crittografare la password dell'utente
+
+   (jwt)
+      Package con strumenti utili alla creazione di Json Web Token (JWT)
+      I token sono utili per verificare il diritto degli utenti ad accedere alle varie zone del sito
+ */
+
 const Joi = require('joi');
 const HttpStatus = require('http-status-codes');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+// importazione schema utente
 const users = require('../models/userModels');
 const helpers = require('../helpers/helpers');
 const dbConfiguration = require('../config/secret');
 
 module.exports = {
+
+    /*
+        (CreateUser) => metodo per l'inserimento del nuovo utente nel database
+            1. Definizione Vincoli Schema Utente
+            2. Verifica che i dati rispettino i vincoli
+            3. Controlla che Email, Username ricevuti, non siano già registrati nel database
+            4. Crittografa la Password
+            5. Creazione Documento JSON MongoDB
+            6. Inserimento Documento nel database
+            7. Creazione di un Token composto da:
+               - Header -> contiene i permessi dell'utente
+               - Payload -> contiene i dati dell'utente
+               - Signature
+            8. Inserimento Token nel Cookie dell'utente con scadenza
+     */
 
     async CreateUser(request, response) {
 
@@ -65,6 +97,14 @@ module.exports = {
                 });
         });
     },
+
+    /*
+        (LoginUser) -> metodo per la verifica dell'esistenza e della correttezza dei dati inseriti per accedere
+            1. Verifica l'esistenza dell'username nel database
+            2. Se esiste, controllo che la password sia corretta
+            3. Se è corretta, creo un token con i dati dell'utente
+            4. Inserisco il Token nel Cookie
+     */
 
     async LoginUser(request, response){
 
