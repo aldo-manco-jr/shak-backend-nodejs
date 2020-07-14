@@ -52,7 +52,7 @@ module.exports = {
                 .then((user) => {
 
                     const token = jwt.sign({data: user}, dbConfiguration.secret, {
-                        expiresIn: 130
+                        expiresIn: "1h"
                     });
 
                     response.cookie('auth', token);
@@ -87,7 +87,7 @@ module.exports = {
                         }
 
                         const token = jwt.sign({data: userFound}, dbConfiguration.secret, {
-                            expiresIn: 10000
+                            expiresIn: "1h"
                         });
 
                         response.cookie(token);

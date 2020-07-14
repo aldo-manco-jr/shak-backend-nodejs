@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../ShakFE/.idea/Shak.iml" filepath="$PROJECT_DIR$/../ShakFE/.idea/Shak.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/shak-backend.iml" filepath="$PROJECT_DIR$/.idea/shak-backend.iml" />
     </modules>
   </component>
