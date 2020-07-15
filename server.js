@@ -32,6 +32,7 @@ app.use(cors());
 // Dati accesso al database
 const databaseConfig = require('./config/secret');
 
+
 // Impostazione Permessi, Funzionalità API
 app.use((req, res, next)  => {
    res.header("Access-Control-Allow-Origin", "*");
@@ -57,7 +58,10 @@ mongoose.connect(databaseConfig.url, {useNewUrlParser: true, useUnifiedTopology:
 
 // gestisce le HTTP Request Post ricevute
 const auth  = require('./routes/authRoutes');
+const posts  = require('./routes/postRoutes');
+
 app.use('/api/shak', auth);
+app.use('/api/shak', posts);
 
 // inizializzazione server
 app.listen(3000, () => {

@@ -129,7 +129,7 @@ module.exports = {
                             expiresIn: "1h"
                         });
 
-                        response.cookie(token);
+                        response.cookie('auth', token);
 
                         return response.status(HttpStatus.OK).json({message: 'Login effettuato con successo :)', userFound, token});
                     });
