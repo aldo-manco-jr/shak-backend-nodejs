@@ -4,7 +4,14 @@ const dbConfig = require('../config/secret');
 
 module.exports = {
     VerifyToken: (req, res, next) => {
-        const token = req.cookies.auth;
+
+        if (!req.headers.authorization){
+            return res.status(HttpStatus.UNAUTHORIZED).json({message: 'Not Logged In'});
+        }
+
+        const token = req.cookies.auth || req.headers.authorization.split(' ')[1];
+
+        console.log(token);
 
         if (!token) {
             return res
