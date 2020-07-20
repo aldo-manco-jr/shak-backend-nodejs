@@ -32,6 +32,8 @@ app.use(cors());
 // Dati accesso al database
 const databaseConfig = require('./config/secret');
 
+const server = require('http').createServer(app);
+const io = require('socket.io').listen(server);
 
 // Impostazione Permessi, Funzionalità API
 app.use((req, res, next)  => {
@@ -56,6 +58,8 @@ mongoose.Promise = global.Promise;
 // collegamento con il database specificato in (databaseConfig)
 mongoose.connect(databaseConfig.url, {useNewUrlParser: true, useUnifiedTopology: true });
 
+require('./socket/streams')(io);
+
 // gestisce le HTTP Request Post ricevute
 const auth  = require('./routes/authRoutes');
 const posts  = require('./routes/postRoutes');
@@ -64,6 +68,6 @@ app.use('/api/shak', auth);
 app.use('/api/shak', posts);
 
 // inizializzazione server
-app.listen(3000, () => {
+server.listen(3000, () => {
    console.log('In Esecuzione sulla Porta 3000');
 });
