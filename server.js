@@ -64,10 +64,12 @@ require('./socket/streams')(io);
 const auth  = require('./routes/authRoutes');
 const posts  = require('./routes/postRoutes');
 const users = require('./routes/userRoutes');
+const friends = require('./routes/friendsRoutes');
 
 app.use('/api/shak', auth);
 app.use('/api/shak', posts);
 app.use('/api/shak', users);
+app.use('/api/shak', friends);
 
 // inizializzazione server
 server.listen(3000, () => {
