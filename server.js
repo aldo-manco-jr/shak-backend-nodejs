@@ -65,11 +65,13 @@ const auth  = require('./routes/authRoutes');
 const posts  = require('./routes/postRoutes');
 const users = require('./routes/userRoutes');
 const friends = require('./routes/friendsRoutes');
+const message = require('./routes/messageRoutes');
 
 app.use('/api/shak', auth);
 app.use('/api/shak', posts);
 app.use('/api/shak', users);
 app.use('/api/shak', friends);
+app.use('/api/shak', message);
 
 // inizializzazione server
 server.listen(3000, () => {

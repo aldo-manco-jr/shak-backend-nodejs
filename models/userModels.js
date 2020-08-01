@@ -33,6 +33,13 @@ const userSchema = mongoose.Schema({
             read: { type: Boolean, default: false },
             date: { type: String, default: '' }
         }
+    ],
+
+    chatList: [
+        {
+            userId: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+            msgId: {type: mongoose.Schema.Types.ObjectId, ref: 'Message'}
+        }
     ]
 });
 
