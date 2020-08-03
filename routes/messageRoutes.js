@@ -4,6 +4,7 @@ const router = express.Router();
 const MessageCtrl = require('../controllers/message');
 const AuthHelper = require('../Helpers/AuthHelper');
 
+router.get('/chat-messages/:senderId/:receiverId', AuthHelper.VerifyToken, MessageCtrl.GetAllMessages);
 router.post('/chat-messages/:senderId/:receiverId', AuthHelper.VerifyToken, MessageCtrl.SendMessage);
 
 module.exports = router;
