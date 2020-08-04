@@ -59,6 +59,7 @@ mongoose.Promise = global.Promise;
 mongoose.connect(databaseConfig.url, {useNewUrlParser: true, useUnifiedTopology: true });
 
 require('./socket/streams')(io);
+require('./socket/private')(io);
 
 // gestisce le HTTP Request Post ricevute
 const auth  = require('./routes/authRoutes');

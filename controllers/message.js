@@ -56,7 +56,6 @@ module.exports = {
           newConversation.partecipants.push({ senderId: req.user._id, receiverId: req.params.receiverId });
 
           const saveConversation = await newConversation.save();
-          console.log(saveConversation);
 
           const newMessage = new Message();
           newMessage.conversationId = saveConversation._id;
