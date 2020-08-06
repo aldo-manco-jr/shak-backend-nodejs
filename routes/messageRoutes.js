@@ -8,6 +8,8 @@ router.get('/chat-messages/:senderId/:receiverId', AuthHelper.VerifyToken, Messa
 
 router.get('/receiver-messages/:sender/:receiver', AuthHelper.VerifyToken, MessageCtrl.MarkReceiverMessages);
 
+router.get('/mark-all-messages', AuthHelper.VerifyToken, MessageCtrl.MarkAllMessages);
+
 router.post('/chat-messages/:senderId/:receiverId', AuthHelper.VerifyToken, MessageCtrl.SendMessage);
 
 module.exports = router;

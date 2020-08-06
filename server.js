@@ -22,6 +22,7 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
+const _ = require('lodash');
 
 // Creazione API
 const app = express();
@@ -35,7 +36,9 @@ const databaseConfig = require('./config/secret');
 const server = require('http').createServer(app);
 const io = require('socket.io').listen(server);
 
-require('./socket/streams')(io);
+const {User} = require('./helpers/UserClass');
+
+require('./socket/streams')(io, User, _);
 require('./socket/private')(io);
 
 // gestisce le HTTP Request Post ricevute
@@ -61,7 +64,7 @@ app.use(express.urlencoded({extended: true, limit: '50mb'}));
 
 // inizializzo il cookie
 app.use(cookieParser());
-app.use(logger('dev'));
+//app.use(logger('dev'));
 
 // dichiarazione del tipo di dato restituito dalle query fatte in Mongoose
 mongoose.Promise = global.Promise;
