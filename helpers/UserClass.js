@@ -17,7 +17,7 @@ class User {
   }
 
   getUserId(socketId){
-    const user = this.globalArray.filter((user) => (user.socketId === socketId))[0];
+    const user = this.globalArray.filter((tmp) => (tmp.socketId === socketId))[0];
     return user;
   }
 
@@ -26,7 +26,7 @@ class User {
     const userDisconnected = this.getUserId(socketId);
 
     if (userDisconnected){
-      this.globalArray = this.globalArray.filter((user) => (user.id !== userDisconnected));
+      this.globalArray = this.globalArray.filter((tmp) => (tmp.socketId !== userDisconnected));
     }
 
     return userDisconnected;
@@ -34,8 +34,8 @@ class User {
 
   getNamesList(room){
 
-    const arrayCurrentRoom = this.globalArray.filter((user) => (user.room === room));
-    const arrayNames = arrayCurrentRoom.map(user => user.userUsername);
+    const arrayCurrentRoom = this.globalArray.filter((tmp) => (tmp.room === room));
+    const arrayNames = arrayCurrentRoom.map((tmp) => (tmp.userUsername));
 
     return arrayNames;
   }
