@@ -168,6 +168,28 @@ module.exports = {
       });
   },
 
+  async RemoveComment(req, res) {
+
+    const {postId, comment} = req.body;
+
+    await posts.updateOne({
+        _id: postId
+      },
+      {
+        $pull: {
+          comments: {
+            _id: comment._id
+          }
+        }
+      })
+      .then(() => {
+        return res.status(HttpStatus.OK).json({ message: 'You have remove the post successfully' });
+      })
+      .catch((err) => {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
+      });
+  },
+
   async GetPost(req, res) {
     await posts.findOne({ _id: req.params.id })
       .populate('user_id')
