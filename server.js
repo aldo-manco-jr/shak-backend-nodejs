@@ -47,6 +47,7 @@ const posts  = require('./routes/postRoutes');
 const users = require('./routes/userRoutes');
 const friends = require('./routes/friendsRoutes');
 const message = require('./routes/messageRoutes');
+const image = require('./routes/imageRoutes');
 
 // Impostazione Permessi, Funzionalità API
 // app.use((req, res, next)  => {
@@ -76,6 +77,8 @@ app.use('/api/shak', posts);
 app.use('/api/shak', users);
 app.use('/api/shak', friends);
 app.use('/api/shak', message);
+app.use('/api/shak', image);
+
 
 // inizializzazione server
 server.listen(3000, () => {

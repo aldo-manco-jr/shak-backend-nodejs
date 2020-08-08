@@ -40,6 +40,16 @@ const userSchema = mongoose.Schema({
             receiverId: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
             msgId: {type: mongoose.Schema.Types.ObjectId, ref: 'Message'}
         }
+    ],
+
+    profileImageId: {type: String , default: 'qktq4chaw5bk7xdwwieu.jpg' },
+    profileImageVersion: { type: String, default: '1596898350' },
+
+    images: [
+        {
+            imageId : { type: String, default:'' },
+            imageVersion : { type: String, default:'' }
+        }
     ]
 });
 
