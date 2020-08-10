@@ -153,7 +153,7 @@ module.exports = {
       {
         $push: {
           comments: {
-            user_id: req.user.id,
+            user_id: req.user._id,
             username: req.user.username,
             comment_text: req.body.comment,
             created_at: new Date()

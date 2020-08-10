@@ -35,5 +35,24 @@ module.exports = {
                     .json({ message: 'Error Occured'})
                 );
         });
+    },
+    async SetDefaultImage(req,res){
+        const { imageId, imageVersion} = req.params;
+
+        await User.update({
+            _id: req.user._id
+        }, {
+            profileImageId: imageId,
+            profileImageVersion: imageVersion
+        })
+            .then(()=>
+                res
+                    .status(HttpStatus.OK)
+                    .json({ message: 'image uploaded successfully'})
+            )
+            .catch(err =>
+                res.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .json({ message: 'Error Occured'})
+            );
     }
 };
