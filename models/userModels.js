@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 /*
     Definizione Schema Utente
@@ -52,6 +53,11 @@ const userSchema = mongoose.Schema({
         }
     ]
 });
+
+userSchema.statics.EncrypsPassword = async function(password){
+    const hash = await bcrypt.hash(password, 10);
+    return hash;
+}
 
 // esportazione schema
 module.exports = mongoose.model('User', userSchema);
