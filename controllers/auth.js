@@ -67,7 +67,7 @@ module.exports = {
             return response.status(HttpStatus.CONFLICT).json({message: 'Nome utente già esistente'});
         }
 
-        return bcrypt.hash(value.password, 16, (error, hashedPassword) => {
+        return bcrypt.hash(value.password, 10, (error, hashedPassword) => {
 
             if (error) {
                 response.status(HttpStatus.BAD_REQUEST).json({message: 'Errore nella codifica della password'});

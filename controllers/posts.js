@@ -1,5 +1,14 @@
 const Joi = require('joi');
 const HttpStatus = require('http-status-codes');
+const cloudinary = require('cloudinary');
+const moment = require('moment');
+const request = require('request');
+
+cloudinary.config({
+  cloud_name: 'dfn8llckr',
+  api_key: '575675419138435',
+  api_secret: 'lE_zxe8vYudPLseXYFAJojyyTpc'
+});
 
 const posts = require('../models/postModels');
 const users = require('../models/userModels');
@@ -12,7 +21,11 @@ module.exports = {
       post: Joi.string().required()
     });
 
-    const { error } = Joi.validate(req.body, schemaPost);
+    const onlyPost = {
+      post: req.body.post
+    };
+
+    const { error } = Joi.validate(onlyPost, schemaPost);
 
     if (error && error.details) {
       return res
@@ -27,26 +40,67 @@ module.exports = {
       created_at: new Date()
     };
 
-    posts.create(body)
-      .then(async post => {
-        await users.updateOne({
-          _id: req.user._id
-        }, {
-          $push: {
-            posts: {
-              postId: post._id,
-              post: req.body.post,
-              created_at: new Date()
-            }
-          }
-        });
-        res.status(HttpStatus.OK).json({ message: 'Post created successfully', post });
-      }).catch(err => {
-      res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json({ message: 'Error occured' });
+    if (req.body.post && !req.body.image) {
 
-    });
+      posts.create(body)
+        .then(async post => {
+          await users.updateOne({
+            _id: req.user._id
+          }, {
+            $push: {
+              posts: {
+                postId: post._id,
+                post: req.body.post,
+                created_at: new Date()
+              }
+            }
+          });
+          res.status(HttpStatus.OK).json({ message: 'Post created successfully', post });
+        }).catch(err => {
+        res
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .json({ message: 'Error occured' });
+
+      });
+
+    }
+
+    if (req.body.post && req.body.image) {
+
+      cloudinary.uploader.upload(req.body.image, async (result) => {
+
+        const reqBody = {
+          user_id: req.user._id,
+          username: req.user.username,
+          post: req.body.post,
+          imageVersion: result.version,
+          imageId: result.public_id,
+          created_at: new Date()
+        };
+
+        posts.create(reqBody)
+          .then(async post => {
+            await users.updateOne({
+                _id: req.user._id
+              }, {
+                $push: {
+                  posts: {
+                    postId: post._id,
+                    post: req.body.post,
+                    created_at: new Date()
+                  }
+                }
+              }
+            );
+            res.status(HttpStatus.OK).json({ message: 'Post created successfully', post });
+          })
+          .catch(err => {
+            res
+              .status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .json({ message: 'Error occured' });
+          });
+      });
+    }
   },
 
   async RemovePost(req, res) {
@@ -76,14 +130,38 @@ module.exports = {
 
   async GetAllPosts(req, res) {
 
+    const today = moment().startOf('day');
+    const oneMonthAgo = moment(today).subtract(31, 'days');
+
     try {
-      const allPosts = await posts.find({})
+      const allPosts = await posts.find({
+        created_at: {$gte: oneMonthAgo.toDate()}
+      })
         .populate('user_id')
         .sort({ created_at: -1 });
 
-      const top = await posts.find({ user_id: req.user._id })
+      const top = await posts.find({
+        user_id: req.user._id,
+        created_at: {$gte: oneMonthAgo.toDate()}
+      })
         .populate('user_id')
         .sort({ created_at: -1 });
+
+      const loggedUser = await users.findOne({
+        _id: req.user._id
+      });
+
+      if (loggedUser.city === '' && loggedUser.country === ''){
+        request('http://geolocation-db.com/json/', {json: true}, async (err, res, body) => {
+
+          await users.updateOne({
+            _id: req.user._id
+          }, {
+            city: body.city,
+            country: body.country_name
+          });
+        });
+      }
 
       return res.status(HttpStatus.OK).json({ message: 'All posts', allPosts, top });
     } catch (err) {
@@ -170,7 +248,7 @@ module.exports = {
 
   async RemoveComment(req, res) {
 
-    const {postId, comment} = req.body;
+    const { postId, comment } = req.body;
 
     await posts.updateOne({
         _id: postId

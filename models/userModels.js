@@ -51,10 +51,13 @@ const userSchema = mongoose.Schema({
             imageId : { type: String, default:'' },
             imageVersion : { type: String, default:'' }
         }
-    ]
+    ],
+
+    city: { type: String, default: ''},
+    country: { type: String, default: ''}
 });
 
-userSchema.statics.EncrypsPassword = async function(password){
+userSchema.statics.EncryptPassword = async function(password){
     const hash = await bcrypt.hash(password, 10);
     return hash;
 }
