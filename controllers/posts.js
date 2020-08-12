@@ -141,7 +141,7 @@ module.exports = {
         .sort({ created_at: -1 });
 
       const top = await posts.find({
-        user_id: req.user._id,
+        'likes.username': { $eq: req.user.username },
         created_at: {$gte: oneMonthAgo.toDate()}
       })
         .populate('user_id')
