@@ -100,7 +100,7 @@ module.exports = {
     if (error && error.details) {
       return res
         .status(httpStatus.BAD_REQUEST)
-        .json({ message: error.details });
+        .json({ message: 'New password should be at least of 5 characters' });
     }
 
     const user = await users.findOne({ _id: req.user._id });
