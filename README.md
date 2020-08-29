@@ -1,4 +1,4 @@
-# shak-backend
+# SHAK
 
 If you want to **build your own SHAK**, go to the **readme.md** file of **Front-End**:  
 
