@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const MessageCtrl = require('../controllers/message');
-const AuthHelper = require('../Helpers/AuthHelper');
+const AuthHelper = require('../helpers/AuthHelper');
 
 router.get('/chat-messages/:senderId/:receiverId', AuthHelper.VerifyToken, MessageCtrl.GetAllMessages);
 

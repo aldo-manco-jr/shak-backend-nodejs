@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const PostCtrl = require('../controllers/posts');
-const AuthHelper = require('../Helpers/AuthHelper');
+const AuthHelper = require('../helpers/AuthHelper');
 
 router.get('/posts', AuthHelper.VerifyToken, PostCtrl.GetAllPosts);
 router.get('/post/:id', AuthHelper.VerifyToken, PostCtrl.GetPost);

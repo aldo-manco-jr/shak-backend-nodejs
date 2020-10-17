@@ -2,7 +2,7 @@ const HttpStatus = require('http-status-codes');
 const Conversation = require('../models/conversationModels');
 const Message = require('../models/messageModels');
 const User = require('../models/userModels');
-const Helper = require('../Helpers/helpers');
+const Helper = require('../helpers/helpers');
 
 module.exports = {
 
