@@ -63,7 +63,9 @@ module.exports = {
   },
 
   async ProfileView(req, res) {
+
     const dateValue = moment().format('YYYY-MM-DD');
+
     await users.update({
         _id: req.body.id,
         'notifications.date': { $ne: [dateValue, ''] },
@@ -84,6 +86,21 @@ module.exports = {
     })
       .catch((error) => {
         return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error Occured' });
+      });
+  },
+
+  async SetUserLocation(req, res) {
+
+    await users.updateOne({
+      _id: req.user._id
+    }, {
+      city: req.body.city,
+      country: req.body.country
+    }).then((userFoundByName) => {
+      res.status(httpStatus.OK).json({ message: 'Location updated' });
+    })
+      .catch(err => {
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error Occured' });
       });
   },
 

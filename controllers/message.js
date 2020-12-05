@@ -150,7 +150,9 @@ module.exports = {
     },
 
     async MarkReceiverMessages(req, res) {
+
         const {sender, receiver} = req.params;
+
         const msg = await Message.aggregate([
             {$unwind: '$message'},
             {
@@ -159,6 +161,7 @@ module.exports = {
                 }
             }
         ]);
+
         if (msg.length > 0) {
             try {
                 msg.forEach(async (value) => {
@@ -213,5 +216,4 @@ module.exports = {
             }
         }
     }
-
 };

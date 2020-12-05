@@ -5,6 +5,7 @@ const PostCtrl = require('../controllers/posts');
 const AuthHelper = require('../helpers/AuthHelper');
 
 router.get('/posts', AuthHelper.VerifyToken, PostCtrl.GetAllPosts);
+router.get('/posts/:username', AuthHelper.VerifyToken, PostCtrl.GetAllUserPosts);
 router.get('/post/:id', AuthHelper.VerifyToken, PostCtrl.GetPost);
 
 router.post('/post/add-post', AuthHelper.VerifyToken, PostCtrl.AddPost);

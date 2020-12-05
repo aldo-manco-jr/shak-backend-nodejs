@@ -12,6 +12,7 @@ cloudinary.config({
 module.exports = {
 
     UploadImage(req, res) {
+
         cloudinary.uploader.upload(req.body.image, async (result) => {
 
             await User.update({
@@ -35,7 +36,9 @@ module.exports = {
                 );
         });
     },
+
     async SetDefaultImage(req,res){
+
         const { imageId, imageVersion} = req.params;
 
         await User.update({
@@ -53,5 +56,26 @@ module.exports = {
                 res.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .json({ message: 'Error Occured'})
             );
+    },
+
+    async SetDefaultCoverImage(req,res){
+
+        const { imageId, imageVersion} = req.params;
+
+        await User.update({
+            _id: req.user._id
+        }, {
+            coverImageId: imageId,
+            coverImageVersion: imageVersion
+        })
+          .then(()=>
+            res
+              .status(HttpStatus.OK)
+              .json({ message: 'image uploaded successfully'})
+          )
+          .catch(err =>
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .json({ message: 'Error Occured'})
+          );
     }
 };

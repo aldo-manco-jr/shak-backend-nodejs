@@ -45,6 +45,8 @@ const userSchema = mongoose.Schema({
 
     profileImageId: {type: String , default: 'qktq4chaw5bk7xdwwieu.jpg' },
     profileImageVersion: { type: String, default: '1596898350' },
+    coverImageId: {type: String , default: 'qktq4chaw5bk7xdwwieu.jpg' },
+    coverImageVersion: { type: String, default: '1596898350' },
 
     images: [
         {

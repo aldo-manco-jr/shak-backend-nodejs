@@ -5,6 +5,7 @@ const User = require('../models/userModels');
 module.exports = {
 
     FollowUsers(req, res) {
+
         const followUser = async () => {
 
             await User.update({
@@ -37,15 +38,16 @@ module.exports = {
         };
 
         followUser()
-            .then(() => {
-                res.status(HttpStatus.OK).json({message: 'Following accepted'})
-            })
-            .catch(err => {
-                res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: 'Error Occured'})
-            });
+          .then(() => {
+              res.status(HttpStatus.OK).json({message: 'Following accepted'})
+          })
+          .catch(err => {
+              res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: 'Error Occured'})
+          });
     },
 
     UnFollowUser(req, res) {
+
         const unFollowUser = async () => {
 
             await User.update({
@@ -79,6 +81,7 @@ module.exports = {
     },
 
     async MarkNotification(req, res) {
+
         //se contiene deleteval verrà cancellata la notifica
         if (!req.body.deleteValue) {
             await User.updateOne({
@@ -97,7 +100,9 @@ module.exports = {
                         .status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .json({message: 'Error Occured'});
                 });
+
         }else{
+
             //eliminazione della notifica
             await User.update({
                 _id: req.user._id,
@@ -120,6 +125,7 @@ module.exports = {
     },
 
     async MarkAllNotifications(req,res){
+
         await User.update({
             _id: req.user._id
         },{
