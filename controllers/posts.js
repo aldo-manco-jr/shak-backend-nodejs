@@ -101,55 +101,6 @@ module.exports = {
     }
   },
 
-  AddPost(req, res) {
-
-    const schemaPost = Joi.object().keys({
-      post: Joi.string().required()
-    });
-
-    const onlyPost = {
-      post: req.body.post
-    };
-
-    const { error } = Joi.validate(onlyPost, schemaPost);
-
-    if (error && error.details) {
-      return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json({ msg: error.details });
-    }
-
-    const body = {
-      user_id: req.user._id,
-      username: req.user.username,
-      post: req.body.post,
-      created_at: new Date()
-    };
-
-    if (req.body.post && !req.body.image) {
-
-      posts.create(body)
-        .then(async post => {
-          await users.updateOne({
-            _id: req.user._id
-          }, {
-            $push: {
-              posts: {
-                postId: post._id,
-                post: req.body.post,
-                created_at: new Date()
-              }
-            }
-          });
-          res.status(HttpStatus.OK).json({ message: 'Post created successfully', post });
-        }).catch(err => {
-        res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .json({ message: 'Error occured' });
-      });
-    }
-  },
-
   async RemovePost(req, res) {
 
     await posts.deleteOne({
@@ -210,6 +161,23 @@ module.exports = {
         });
       }
       return res.status(HttpStatus.OK).json({ message: 'All posts', allPosts, top });
+    } catch (err) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
+    }
+  },
+
+  async GetAllNewPosts(req, res) {
+
+    const lastPostCreatedAt = moment(req.body.created_at, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+    try {
+      const allNewPosts = await posts.find({
+        created_at: {$gte: lastPostCreatedAt.toDate()}
+      })
+        .populate('user_id')
+        .sort({ created_at: -1 });
+
+      return res.status(HttpStatus.OK).json({ message: 'New posts', allNewPosts });
     } catch (err) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
     }
