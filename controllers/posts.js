@@ -179,7 +179,7 @@ module.exports = {
 
       return res.status(HttpStatus.OK).json({ message: 'New posts', allNewPosts });
     } catch (err) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message });
     }
   },
 
@@ -312,5 +312,20 @@ module.exports = {
         res
           .status(HttpStatus.NOT_FOUND)
           .json({ message: 'Post Not Found' }));
+  },
+
+  async GetAllNewPosts(req, res) {
+    const lastMessageTime = moment(req.params.created_at);
+
+    try {
+      const allNewPosts = await posts.find({
+        created_at: {$gt: lastMessageTime.toDate()}//oneMonthAgo.toDate()}
+      })
+        .populate('user_id')
+        .sort({ created_at: -1 });
+      return res.status(HttpStatus.OK).json({ message: 'All new posts', allNewPosts });
+    } catch (err) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
+    }
   }
 };

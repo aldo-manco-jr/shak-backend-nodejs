@@ -146,5 +146,78 @@ module.exports = {
             res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error Occured' });
           });
       });
+  },
+
+  async GetFollowing(req, res) {
+
+    const user = await users.findOne({
+      username: req.params.username
+    });
+
+    await users.find({
+      'followers.follower': { $eq: user._id }
+    })
+      .sort({ username: 1 })
+      .then((followingList) => {
+        return res.status(httpStatus.OK).json({ message: 'Following Users', followingList });
+      })
+      .catch((error) => {
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'porcaccio olive' + error.details });
+      });
+  },
+
+  async IsFollowing(req, res) {
+
+    const user = await users.findOne({
+      username: req.params.username
+    });
+
+    console.log(user.username+ "porco oli");
+
+    /*await users.findOne({ username: req.params.username })
+      .populate('posts.postId')
+      .populate('following.userFollowed')
+      .populate('followers.follower')
+      .populate('chatList.receiverId')
+      .populate('chatList.msgId')
+      .populate('notifications.senderId')
+      .then((userFoundByName) => {
+        return res.status(httpStatus.OK).json({ message: 'User by username', userFoundByName });
+      })
+      .catch((error) => {
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.details });
+      });*/
+
+    await users.findOne({
+      username: req.params.username,
+      'followers.follower': { $eq: req.user._id }
+    }).then((userFoundByName) => {
+      if (userFoundByName){
+        return res.status(httpStatus.OK).json({ message: 'yes'});
+      }else {
+        return res.status(httpStatus.OK).json({ message: 'no'});
+      }
+    })
+      .catch((error) => {
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.details });
+      });
+  },
+
+  async GetFollowers(req, res) {
+
+    const user = await users.findOne({
+      username: req.params.username
+    });
+
+    await users.find({
+      'following.userFollowed': { $eq: user._id }
+    })
+      .sort({ username: 1 })
+      .then((followersList) => {
+        return res.status(httpStatus.OK).json({ message: 'Followers Users', followersList });
+      })
+      .catch((error) => {
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.details });
+      });
   }
 };
