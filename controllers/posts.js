@@ -305,7 +305,8 @@ module.exports = {
     await posts.findOne({ _id: req.params.id })
       .populate('user_id')
       .populate('comments.user_id')
-      .then((post) => {
+      //.sort({ 'comments.created_at': -1 })
+  .then((post) => {
         res.status(HttpStatus.OK).json({ message: 'Post Found', post });
       })
       .catch(err =>

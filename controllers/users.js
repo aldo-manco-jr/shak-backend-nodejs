@@ -172,22 +172,6 @@ module.exports = {
       username: req.params.username
     });
 
-    console.log(user.username+ "porco oli");
-
-    /*await users.findOne({ username: req.params.username })
-      .populate('posts.postId')
-      .populate('following.userFollowed')
-      .populate('followers.follower')
-      .populate('chatList.receiverId')
-      .populate('chatList.msgId')
-      .populate('notifications.senderId')
-      .then((userFoundByName) => {
-        return res.status(httpStatus.OK).json({ message: 'User by username', userFoundByName });
-      })
-      .catch((error) => {
-        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.details });
-      });*/
-
     await users.findOne({
       username: req.params.username,
       'followers.follower': { $eq: req.user._id }
