@@ -15,6 +15,143 @@ const users = require('../models/userModels');
 
 module.exports = {
 
+  async GetAllFollowingUsersPosts(req, res) {
+
+    const today = moment().startOf('day');
+    const oneMonthAgo = moment(today).subtract(31, 'days');
+
+    try {
+      const loggedUser = await users.findOne({
+        _id: req.user._id
+      });
+
+      let followingArray = function() {
+        let followingObjectArray = [];
+        if (typeof loggedUser.following != 'undefined') {
+          for (let i = 0; i < loggedUser.following.length; i++) {
+            followingObjectArray.push(loggedUser.following[i].userFollowed);
+          }
+        }
+
+        return followingObjectArray;
+      };
+
+      const following = followingArray();
+
+      // vengono presi tutti i post dell'utente che ha effettuato il login e dei suoi following
+      const allPosts = await posts.find({
+        $and: [
+          {
+            $or: [
+              { 'username': { $eq: req.user.username } },
+              { 'user_id': { $in: following } }
+            ]
+          },
+          {
+            created_at: { $gte: oneMonthAgo.toDate() }
+          }
+        ]
+      })
+        .populate('user_id')
+        .sort({ created_at: -1 });
+
+      /*    //codice precedente che non tiene conto dei following
+            const allPosts = await posts.find({
+              created_at: {$gte: oneMonthAgo.toDate()}
+            })
+              .populate('user_id')
+              .sort({ created_at: -1 });*/
+
+      const top = await posts.find({
+        'likes.username': { $eq: req.user.username },
+        created_at: { $gte: oneMonthAgo.toDate() }
+      })
+        .populate('user_id')
+        .sort({ created_at: -1 });
+
+      if (loggedUser.city === '' && loggedUser.country === '') {
+        request('http://geolocation-db.com/json/', { json: true }, async (err, res, body) => {
+
+          await users.updateOne({
+            _id: req.user._id
+          }, {
+            city: body.city,
+            country: body.country_name
+          });
+        });
+      }
+
+      return res.status(HttpStatus.OK).json({ message: 'All posts', allPosts, top });
+    } catch (err) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
+    }
+  },
+
+  async GetAllNewPosts(req, res) {
+
+    const lastPostCreatedAt = moment(req.body.created_at, 'yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'');
+
+    try {
+      const allNewPosts = await posts.find({
+        created_at: { $gte: lastPostCreatedAt.toDate() }
+      })
+        .populate('user_id')
+        .sort({ created_at: -1 });
+
+      return res.status(HttpStatus.OK).json({ message: 'New posts', allNewPosts });
+    } catch (err) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message });
+    }
+  },
+
+  /*async GetAllNewPosts(req, res) {
+    const lastMessageTime = moment(req.params.created_at);
+
+    try {
+      const allNewPosts = await posts.find({
+        created_at: { $gt: lastMessageTime.toDate() }//oneMonthAgo.toDate()}
+      })
+        .populate('user_id')
+        .sort({ created_at: -1 });
+      return res.status(HttpStatus.OK).json({ message: 'All new posts', allNewPosts });
+    } catch (err) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
+    }
+  },*/
+
+  async GetAllUserPosts(req, res) {
+
+    const today = moment().startOf('day');
+    const oneMonthAgo = moment(today).subtract(31, 'days');
+
+    try {
+      const userPosts = await posts.find({
+        username: req.params.username,
+        created_at: { $gte: oneMonthAgo.toDate() }
+      })
+        .populate('user_id')
+        .sort({ created_at: -1 });
+
+      return res.status(HttpStatus.OK).json({ message: 'All user\'s posts', userPosts });
+    } catch (err) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
+    }
+  },
+
+  async GetPost(req, res) {
+    await posts.findOne({ _id: req.params.id })
+      .populate('user_id')
+      .populate('comments.user_id')
+      //.sort({ 'comments.created_at': -1 })
+      .then((post) => {
+        res.status(HttpStatus.OK).json({ message: 'Post Found', post });
+      })
+      .catch(err =>
+        res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: 'Post Not Found' }));
+  },
+
   AddPost(req, res) {
 
     const schemaPost = Joi.object().keys({
@@ -126,114 +263,6 @@ module.exports = {
       });
   },
 
-  async GetAllPosts(req, res) {
-
-    const today = moment().startOf('day');
-    const oneMonthAgo = moment(today).subtract(31, 'days');
-
-    try {
-      const loggedUser = await users.findOne({
-        _id: req.user._id
-      });
-
-      let followingArray = function (){
-        let followingObjectArray = [];
-        if (typeof loggedUser.following != 'undefined') {
-          for (let i = 0; i < loggedUser.following.length; i++) {
-            followingObjectArray.push(loggedUser.following[i].userFollowed);
-          }
-        }
-
-        return followingObjectArray;
-      };
-
-      const following = followingArray();
-
-      // vengono presi tutti i post dell'utente che ha effettuato il login e dei suoi following
-      const allPosts = await posts.find({
-        $and: [
-          {
-            $or: [
-              {'username': {$eq: req.user.username}},
-              {'user_id': {$in: following}}
-            ],
-          },
-          {
-            created_at: {$gte: oneMonthAgo.toDate()}
-          }
-          ]
-      })
-          .populate('user_id')
-          .sort({ created_at: -1 });
-
-/*    //codice precedente che non tiene conto dei following
-      const allPosts = await posts.find({
-        created_at: {$gte: oneMonthAgo.toDate()}
-      })
-        .populate('user_id')
-        .sort({ created_at: -1 });*/
-
-      const top = await posts.find({
-        'likes.username': { $eq: req.user.username },
-        created_at: {$gte: oneMonthAgo.toDate()}
-      })
-        .populate('user_id')
-        .sort({ created_at: -1 });
-
-      if (loggedUser.city === '' && loggedUser.country === ''){
-        request('http://geolocation-db.com/json/', {json: true}, async (err, res, body) => {
-
-          await users.updateOne({
-            _id: req.user._id
-          }, {
-            city: body.city,
-            country: body.country_name
-          });
-        });
-      }
-
-      return res.status(HttpStatus.OK).json({ message: 'All posts', allPosts, top });
-    } catch (err) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
-    }
-  },
-
-  async GetAllNewPosts(req, res) {
-
-    const lastPostCreatedAt = moment(req.body.created_at, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-
-    try {
-      const allNewPosts = await posts.find({
-        created_at: {$gte: lastPostCreatedAt.toDate()}
-      })
-        .populate('user_id')
-        .sort({ created_at: -1 });
-
-      return res.status(HttpStatus.OK).json({ message: 'New posts', allNewPosts });
-    } catch (err) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message });
-    }
-  },
-
-  async GetAllUserPosts(req, res) {
-
-    const today = moment().startOf('day');
-    const oneMonthAgo = moment(today).subtract(31, 'days');
-
-    try {
-      const userPosts = await posts.find({
-        username: req.params.username,
-        created_at: {$gte: oneMonthAgo.toDate()}
-      })
-        .populate('user_id')
-        .sort({ created_at: -1 });
-
-      return res.status(HttpStatus.OK).json({ message: 'All user\'s posts', userPosts });
-    } catch (err) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
-    }
-  },
-
   async AddLike(req, res) {
 
     const postId = req.body._id;
@@ -331,36 +360,9 @@ module.exports = {
       .catch((err) => {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
       });
-  },
+  }
 
-  async GetPost(req, res) {
-    await posts.findOne({ _id: req.params.id })
-      .populate('user_id')
-      .populate('comments.user_id')
-      //.sort({ 'comments.created_at': -1 })
-  .then((post) => {
-        res.status(HttpStatus.OK).json({ message: 'Post Found', post });
-      })
-      .catch(err =>
-        res
-          .status(HttpStatus.NOT_FOUND)
-          .json({ message: 'Post Not Found' }));
-  },
-
-  async GetAllNewPosts(req, res) {
-    const lastMessageTime = moment(req.params.created_at);
-
-    try {
-      const allNewPosts = await posts.find({
-        created_at: {$gt: lastMessageTime.toDate()}//oneMonthAgo.toDate()}
-      })
-        .populate('user_id')
-        .sort({ created_at: -1 });
-      return res.status(HttpStatus.OK).json({ message: 'All new posts', allNewPosts });
-    } catch (err) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
-    }
-  }/*,
+  /*,
 
   async GetFollowingPosts(req, res) {
     const lastMessageTime = moment(req.params.created_at);

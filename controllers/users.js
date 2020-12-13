@@ -63,33 +63,6 @@ module.exports = {
       });
   },
 
-  async ProfileView(req, res) {
-
-    const dateValue = moment().format('YYYY-MM-DD');
-
-    await users.update({
-        _id: req.body.id,
-        'notifications.date': { $ne: [dateValue, ''] },
-        'notifications.senderId': { $ne: req.user._id }
-      }, {
-        $push: {
-          notifications: {
-            senderId: req.user._id,
-            message: `${req.user.username} viewed your profile`,
-            created: new Date(),
-            date: dateValue,
-            viewProfile: true
-          }
-        }
-      }
-    ).then((userFoundByName) => {
-      return res.status(httpStatus.OK).json({ message: 'Notificaion sent' });
-    })
-      .catch((error) => {
-        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error Occured' });
-      });
-  },
-
   async SetUserLocation(req, res) {
 
     await users.updateOne({
@@ -105,47 +78,24 @@ module.exports = {
       });
   },
 
-  async ChangePassword(req, res) {
+  async IsFollowing(req, res) {
 
-    const schema = Joi.object().keys({
-      currentPassword: Joi.string().required(),
-      newPassword: Joi.string().min(5).required(),
-      confirmPassword: Joi.string().min(5).optional()
+    const user = await users.findOne({
+      username: req.params.username
     });
 
-    const { error, value } = Joi.validate(req.body, schema);
-
-    if (error && error.details) {
-      return res
-        .status(httpStatus.BAD_REQUEST)
-        .json({ message: 'New password should be at least of 5 characters' });
-    }
-
-    const user = await users.findOne({ _id: req.user._id });
-
-    console.log(value.currentPassword, user.password);
-
-    return bcrypt.compare(value.currentPassword, user.password)
-      .then(async (result) => {
-
-        if (!result) {
-          return res
-            .status(httpStatus.BAD_REQUEST)
-            .json({ message: 'Current Password is incorrect' });
-        }
-
-        const newpassword = await users.EncryptPassword(req.body.newPassword);
-
-        await users.update({
-          _id: req.user._id
-        }, {
-          password: newpassword
-        }).then(() => {
-          res.status(httpStatus.OK).json({ message: 'Password Changed Successfully' });
-        })
-          .catch((error) => {
-            res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error Occured' });
-          });
+    await users.findOne({
+      username: req.params.username,
+      'followers.follower': { $eq: req.user._id }
+    }).then((userFoundByName) => {
+      if (userFoundByName) {
+        return res.status(httpStatus.OK).json({ message: 'yes' });
+      } else {
+        return res.status(httpStatus.OK).json({ message: 'no' });
+      }
+    })
+      .catch((error) => {
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.details });
       });
   },
 
@@ -167,27 +117,6 @@ module.exports = {
       });
   },
 
-  async IsFollowing(req, res) {
-
-    const user = await users.findOne({
-      username: req.params.username
-    });
-
-    await users.findOne({
-      username: req.params.username,
-      'followers.follower': { $eq: req.user._id }
-    }).then((userFoundByName) => {
-      if (userFoundByName){
-        return res.status(httpStatus.OK).json({ message: 'yes'});
-      }else {
-        return res.status(httpStatus.OK).json({ message: 'no'});
-      }
-    })
-      .catch((error) => {
-        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.details });
-      });
-  },
-
   async GetFollowers(req, res) {
 
     const user = await users.findOne({
@@ -203,6 +132,82 @@ module.exports = {
       })
       .catch((error) => {
         return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.details });
+      });
+  },
+
+  FollowUser(req, res) {
+
+    const followUser = async () => {
+
+      await User.update({
+        _id: req.user._id,
+        'following.userFollowed': { $ne: req.body.userFollowed }
+      }, {
+        $push: {
+          following: {
+            userFollowed: req.body.userFollowed
+          }
+        }
+      });
+
+      await User.update({
+        _id: req.body.userFollowed,
+        'followers.follower': { $ne: req.user._id }
+      }, {
+        $push: {
+          followers: {
+            follower: req.user._id
+          },
+          notifications: {
+            senderId: req.user._id,
+            message: `${req.user.username} is now following you.`,
+            created: new Date(),
+            viewProfile: false
+          }
+        }
+      });
+    };
+
+    followUser()
+      .then(() => {
+        res.status(HttpStatus.OK).json({ message: 'Following accepted' });
+      })
+      .catch(err => {
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error Occured' });
+      });
+  },
+
+  UnfollowUser(req, res) {
+
+    const unFollowUser = async () => {
+
+      await User.update({
+        _id: req.user._id
+      }, {
+        $pull: {
+          following: {
+            userFollowed: req.body.userFollowed
+          }
+        }
+      });
+
+      await User.update({
+        _id: req.body.userFollowed
+      }, {
+        $pull: {
+          followers: {
+            follower: req.user._id
+          }
+        }
+      });
+    };
+
+    unFollowUser()
+      .then(() => {
+        res.status(HttpStatus.OK).json({ message: 'unFollowing accepted' });
+      })
+      .catch(err => {
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error Occured' });
       });
   }
 };
