@@ -29,7 +29,6 @@ module.exports = {
 
   async GetUserById(req, res) {
 
-    // username: { $ne: req.user.username }
     await users.findOne({ _id: req.params.id })
       .populate('posts.postId')
       .populate('following.userFollowed')
