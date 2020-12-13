@@ -1,11 +1,18 @@
 const express = require('express');
 const router = express.Router();
 
-const ImageCtrl = require('../controllers/images');
+const ImagesMiddlewares = require('../controllers/images');
 const AuthHelper = require('../helpers/AuthHelper');
 
-router.post('/upload-image', AuthHelper.VerifyToken, ImageCtrl.UploadImage);
-router.get('/set-default-image/:imageId/:imageVersion', AuthHelper.VerifyToken, ImageCtrl.SetDefaultImage);
-router.get('/set-cover-image/:imageId/:imageVersion', AuthHelper.VerifyToken, ImageCtrl.SetDefaultCoverImage);
+
+// Logged User Upload an Image in His Album
+router.post('/upload-image', AuthHelper.VerifyToken, ImagesMiddlewares.UploadUserImage);
+
+// Logged User Set an Image From His Album As User Profile Image
+router.get('/set-default-image/:imageId/:imageVersion', AuthHelper.VerifyToken, ImagesMiddlewares.SetUserProfileImage);
+
+// Logged User Set an Image From His Album As User Cover Image
+router.get('/set-cover-image/:imageId/:imageVersion', AuthHelper.VerifyToken, ImagesMiddlewares.SetUserCoverImage);
+
 
 module.exports = router;

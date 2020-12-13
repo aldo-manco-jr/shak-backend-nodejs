@@ -1,22 +1,39 @@
 const express = require('express');
 const router = express.Router();
 
-const PostCtrl = require('../controllers/posts');
+const PostsMiddlewares = require('../controllers/posts');
 const AuthHelper = require('../helpers/AuthHelper');
 
-router.get('/posts', AuthHelper.VerifyToken, PostCtrl.GetAllPosts);
-router.get('/posts/new/:created_at', AuthHelper.VerifyToken, PostCtrl.GetAllNewPosts);
 
-router.get('/posts/:username', AuthHelper.VerifyToken, PostCtrl.GetAllUserPosts);
-router.get('/post/:id', AuthHelper.VerifyToken, PostCtrl.GetPost);
+// Get All Posts Submitted by Following Users of Logged User
+router.get('/posts', AuthHelper.VerifyToken, PostsMiddlewares.GetAllFollowingUsersPosts);
 
-router.post('/post/add-post', AuthHelper.VerifyToken, PostCtrl.AddPost);
-router.post('/post/remove-post', AuthHelper.VerifyToken, PostCtrl.RemovePost);
+// Get All New Posts When Someone Submit a New Post
+router.get('/posts/new/:created_at', AuthHelper.VerifyToken, PostsMiddlewares.GetAllNewPosts);
 
-router.post('/post/add-like', AuthHelper.VerifyToken, PostCtrl.AddLike);
-router.post('/post/remove-like', AuthHelper.VerifyToken, PostCtrl.RemoveLike);
+// Get All Posts From a Specific User
+router.get('/posts/:username', AuthHelper.VerifyToken, PostsMiddlewares.GetAllUserPosts);
 
-router.post('/post/add-comment', AuthHelper.VerifyToken, PostCtrl.AddComment);
-router.post('/post/remove-comment', AuthHelper.VerifyToken, PostCtrl.RemoveComment);
+// Get a Single Post
+router.get('/post/:id', AuthHelper.VerifyToken, PostsMiddlewares.GetPost);
+
+// Logged User Submit a New Post
+router.post('/post/add-post', AuthHelper.VerifyToken, PostsMiddlewares.AddPost);
+
+// Logged User Deletes Its Own Post
+router.post('/post/remove-post', AuthHelper.VerifyToken, PostsMiddlewares.RemovePost);
+
+// Logged User Add a Specific Post In Its Favourites
+router.post('/post/add-like', AuthHelper.VerifyToken, PostsMiddlewares.AddLike);
+
+// Logged User Remove a Specific Post From Its Favourites
+router.post('/post/remove-like', AuthHelper.VerifyToken, PostsMiddlewares.RemoveLike);
+
+// Logged User Add a Comment to a Post Submitted by a Following User
+router.post('/post/add-comment', AuthHelper.VerifyToken, PostsMiddlewares.AddComment);
+
+// Logged User Delete Its Own Comment From a Post Submitted by a Following User
+router.post('/post/remove-comment', AuthHelper.VerifyToken, PostsMiddlewares.RemoveComment);
+
 
 module.exports = router;

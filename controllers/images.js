@@ -4,78 +4,78 @@ const HttpStatus = require('http-status-codes');
 const User = require('../models/userModels');
 
 cloudinary.config({
-    cloud_name: 'dfn8llckr',
-    api_key: '575675419138435',
-    api_secret: 'lE_zxe8vYudPLseXYFAJojyyTpc'
+  cloud_name: 'dfn8llckr',
+  api_key: '575675419138435',
+  api_secret: 'lE_zxe8vYudPLseXYFAJojyyTpc'
 });
 
 module.exports = {
 
-    UploadImage(req, res) {
+  UploadUserImage(req, res) {
 
-        cloudinary.uploader.upload(req.body.image, async (result) => {
+    cloudinary.uploader.upload(req.body.image, async (result) => {
 
-            await User.update({
-                _id: req.user._id
-            }, {
-                $push :{
-                    images: {
-                        imageId: result.public_id,
-                        imageVersion: result.version
-                    }
-                }
-            })
-                .then(()=>
-                res
-                    .status(HttpStatus.OK)
-                    .json({ message: 'image uploaded successfully'})
-                )
-                .catch(err =>
-                res.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .json({ message: 'Error Occured'})
-                );
-        });
-    },
+      await User.update({
+        _id: req.user._id
+      }, {
+        $push: {
+          images: {
+            imageId: result.public_id,
+            imageVersion: result.version
+          }
+        }
+      })
+        .then(() =>
+          res
+            .status(HttpStatus.OK)
+            .json({ message: 'image uploaded successfully' })
+        )
+        .catch(err =>
+          res.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .json({ message: 'Error Occured' })
+        );
+    });
+  },
 
-    async SetDefaultImage(req,res){
+  async SetUserProfileImage(req, res) {
 
-        const { imageId, imageVersion} = req.params;
+    const { imageId, imageVersion } = req.params;
 
-        await User.update({
-            _id: req.user._id
-        }, {
-            profileImageId: imageId,
-            profileImageVersion: imageVersion
-        })
-            .then(()=>
-                res
-                    .status(HttpStatus.OK)
-                    .json({ message: 'image uploaded successfully'})
-            )
-            .catch(err =>
-                res.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .json({ message: 'Error Occured'})
-            );
-    },
+    await User.update({
+      _id: req.user._id
+    }, {
+      profileImageId: imageId,
+      profileImageVersion: imageVersion
+    })
+      .then(() =>
+        res
+          .status(HttpStatus.OK)
+          .json({ message: 'image uploaded successfully' })
+      )
+      .catch(err =>
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .json({ message: 'Error Occured' })
+      );
+  },
 
-    async SetDefaultCoverImage(req,res){
+  async SetUserCoverImage(req, res) {
 
-        const { imageId, imageVersion} = req.params;
+    const { imageId, imageVersion } = req.params;
 
-        await User.update({
-            _id: req.user._id
-        }, {
-            coverImageId: imageId,
-            coverImageVersion: imageVersion
-        })
-          .then(()=>
-            res
-              .status(HttpStatus.OK)
-              .json({ message: 'image uploaded successfully'})
-          )
-          .catch(err =>
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .json({ message: 'Error Occured'})
-          );
-    }
+    await User.update({
+      _id: req.user._id
+    }, {
+      coverImageId: imageId,
+      coverImageVersion: imageVersion
+    })
+      .then(() =>
+        res
+          .status(HttpStatus.OK)
+          .json({ message: 'image uploaded successfully' })
+      )
+      .catch(err =>
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .json({ message: 'Error Occured' })
+      );
+  }
 };

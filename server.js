@@ -17,6 +17,7 @@
       Package che permette al server ti rimanere sempre in ascolto
  */
 
+// Libraries Imported
 const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
@@ -24,30 +25,33 @@ const logger = require('morgan');
 const cors = require('cors');
 const _ = require('lodash');
 
-// Creazione API
+// Creates API
 const app = express();
 
-// Collegamento Front-End -> API
+// Links Front-End -> API
 app.use(cors());
 
-// Dati accesso al database
+// Secret Data Access for Database
 const databaseConfig = require('./config/secret');
 
+// Create Server and Initialize Socket to Listen Server's Changes
 const server = require('http').createServer(app);
 const io = require('socket.io').listen(server);
 
+// Class of Helper Methods
 const {User} = require('./helpers/UserClass');
 
+// Defined Socket Behaviors
 require('./socket/streams')(io, User, _);
 require('./socket/private')(io);
 
-// gestisce le HTTP Request Post ricevute
-const auth  = require('./routes/authRoutes');
-const posts  = require('./routes/postRoutes');
-const users = require('./routes/userRoutes');
-const friends = require('./routes/friendsRoutes');
-const message = require('./routes/messageRoutes');
-const image = require('./routes/imageRoutes');
+// Express Routes Which Handles Http Request
+const authenticationRoutes  = require('./routes/authRoutes');
+const postsRoutes  = require('./routes/postRoutes');
+const usersRoutes = require('./routes/userRoutes');
+const notificationsRoutes = require('./routes/notificationsRoutes');
+const chatRoutes = require('./routes/messageRoutes');
+const imagesRoutes = require('./routes/imageRoutes');
 
 // Impostazione Permessi, Funzionalità API
 // app.use((req, res, next)  => {
@@ -58,29 +62,31 @@ const image = require('./routes/imageRoutes');
 //    next();
 // });
 
-// token (jwt) => header.payload.signature
-
+// Global Middlewares by Express
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({extended: true, limit: '50mb'}));
 
 // inizializzo il cookie
 app.use(cookieParser());
-//app.use(logger('dev'));
 
-// dichiarazione del tipo di dato restituito dalle query fatte in Mongoose
+// Global Middleware of Express Which Prints Http Request and Response Data
+// app.use(logger('dev'));
+
+// Declares Return Data Type of Query Done With Mongoose
 mongoose.Promise = global.Promise;
-// collegamento con il database specificato in (databaseConfig)
+
+// Connect Server with Database with Data Defined in (databaseConfig)
 mongoose.connect(databaseConfig.url, {useNewUrlParser: true, useUnifiedTopology: true });
 
-app.use('/api/shak', auth);
-app.use('/api/shak', posts);
-app.use('/api/shak', users);
-app.use('/api/shak', friends);
-app.use('/api/shak', message);
-app.use('/api/shak', image);
+// Routes used as Global Middlewares by Express
+app.use('/api/shak', authenticationRoutes);
+app.use('/api/shak', postsRoutes);
+app.use('/api/shak', usersRoutes);
+app.use('/api/shak', notificationsRoutes);
+app.use('/api/shak', chatRoutes);
+app.use('/api/shak', imagesRoutes);
 
-
-// inizializzazione server
+// Initialize Server
 server.listen(3000, () => {
-   console.log('In Esecuzione sulla Porta 3000');
+   console.log('SHAK Server is Listening on Port 3000');
 });
