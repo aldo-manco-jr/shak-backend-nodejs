@@ -12,7 +12,6 @@ cloudinary.config({
 
 const posts = require('../models/postModels');
 const users = require('../models/userModels');
-const ObjectId = require('mongodb').ObjectID;
 
 module.exports = {
 
