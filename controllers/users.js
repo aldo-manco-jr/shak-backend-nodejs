@@ -9,8 +9,9 @@ module.exports = {
 
   async GetAllUsers(req, res) {
 
-    // username: { $ne: req.user.username }
-    await users.find({})
+    await users.find({
+      _id : {$ne: req.user._id}
+    })
       .populate('posts.postId')
       .populate('following.userFollowed')
       .populate('followers.follower')
