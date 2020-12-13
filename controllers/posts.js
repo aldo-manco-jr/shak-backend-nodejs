@@ -12,6 +12,7 @@ cloudinary.config({
 
 const posts = require('../models/postModels');
 const users = require('../models/userModels');
+const ObjectId = require('mongodb').ObjectID;
 
 module.exports = {
 
@@ -132,11 +133,46 @@ module.exports = {
     const oneMonthAgo = moment(today).subtract(31, 'days');
 
     try {
+      const loggedUser = await users.findOne({
+        _id: req.user._id
+      });
+
+      let followingArray = function (){
+        let followingObjectArray = [];
+        if (typeof loggedUser.following != 'undefined') {
+          for (let i = 0; i < loggedUser.following.length; i++) {
+            followingObjectArray.push(loggedUser.following[i].userFollowed);
+          }
+        }
+
+        return followingObjectArray;
+      };
+
+      const following = followingArray();
+
+      // vengono presi tutti i post dell'utente che ha effettuato il login e dei suoi following
+      const allPosts = await posts.find({
+        $and: [
+          {
+            $or: [
+              {'username': {$eq: req.user.username}},
+              {'user_id': {$in: following}}
+            ],
+          },
+          {
+            created_at: {$gte: oneMonthAgo.toDate()}
+          }
+          ]
+      })
+          .populate('user_id')
+          .sort({ created_at: -1 });
+
+/*    //codice precedente che non tiene conto dei following
       const allPosts = await posts.find({
         created_at: {$gte: oneMonthAgo.toDate()}
       })
         .populate('user_id')
-        .sort({ created_at: -1 });
+        .sort({ created_at: -1 });*/
 
       const top = await posts.find({
         'likes.username': { $eq: req.user.username },
@@ -144,10 +180,6 @@ module.exports = {
       })
         .populate('user_id')
         .sort({ created_at: -1 });
-
-      const loggedUser = await users.findOne({
-        _id: req.user._id
-      });
 
       if (loggedUser.city === '' && loggedUser.country === ''){
         request('http://geolocation-db.com/json/', {json: true}, async (err, res, body) => {
@@ -160,6 +192,7 @@ module.exports = {
           });
         });
       }
+
       return res.status(HttpStatus.OK).json({ message: 'All posts', allPosts, top });
     } catch (err) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
@@ -328,5 +361,20 @@ module.exports = {
     } catch (err) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
     }
-  }
+  }/*,
+
+  async GetFollowingPosts(req, res) {
+    const lastMessageTime = moment(req.params.created_at);
+
+    try {
+      const allNewPosts = await posts.find(
+          {
+      },
+          { projection: { }
+      )
+      return res.status(HttpStatus.OK).json({ message: 'All new posts', allNewPosts });
+    } catch (err) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
+    }
+  }*/
 };
