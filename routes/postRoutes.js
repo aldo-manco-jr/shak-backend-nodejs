@@ -29,6 +29,9 @@ router.post('/post/add-like', AuthHelper.VerifyToken, PostsMiddlewares.AddLike);
 // Logged User Remove a Specific Post From Its Favourites
 router.post('/post/remove-like', AuthHelper.VerifyToken, PostsMiddlewares.RemoveLike);
 
+// Get Comments List Related to a Specific Post
+router.get('/comments-list/:id', AuthHelper.VerifyToken, PostsMiddlewares.GetAllPostComments);
+
 // Logged User Add a Comment to a Post Submitted by a Following User
 router.post('/post/add-comment', AuthHelper.VerifyToken, PostsMiddlewares.AddComment);
 

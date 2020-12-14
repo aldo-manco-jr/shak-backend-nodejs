@@ -1,7 +1,6 @@
 const HttpStatus = require('http-status-codes');
 const moment = require('moment');
 const Joi = require('joi');
-const bcrypt = require('bcryptjs');
 
 const users = require('../models/userModels');
 

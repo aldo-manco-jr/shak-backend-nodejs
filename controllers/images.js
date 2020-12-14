@@ -11,6 +11,30 @@ cloudinary.config({
 
 module.exports = {
 
+  async GetAllUserImages(req, res) {
+
+    await User.findOne({ username: req.params.username })
+      .then((user) => {
+
+        let imagesExtractFunction = function() {
+          let imagesList = [];
+          if (typeof user.images != 'undefined') {
+            for (let i = 0; i < user.images.length; i++) {
+              imagesList.push(user.images[i]);
+            }
+          }
+          return imagesList;
+        };
+
+        let imagesList = imagesExtractFunction();
+
+        return res.status(HttpStatus.OK).json({ message: 'Get all user\'s images list', imagesList });
+      })
+      .catch((error) => {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.details });
+      });
+  },
+
   UploadUserImage(req, res) {
 
     cloudinary.uploader.upload(req.body.image, async (result) => {

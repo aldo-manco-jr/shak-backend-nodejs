@@ -157,7 +157,7 @@ module.exports = {
 
     if (error && error.details) {
       return res
-        .status(httpStatus.BAD_REQUEST)
+        .status(HttpStatus.BAD_REQUEST)
         .json({ message: 'New password should be at least of 5 characters' });
     }
 
@@ -170,7 +170,7 @@ module.exports = {
 
         if (!result) {
           return res
-            .status(httpStatus.BAD_REQUEST)
+            .status(HttpStatus.BAD_REQUEST)
             .json({ message: 'Current Password is incorrect' });
         }
 
@@ -181,10 +181,10 @@ module.exports = {
         }, {
           password: newpassword
         }).then(() => {
-          res.status(httpStatus.OK).json({ message: 'Password Changed Successfully' });
+          res.status(HttpStatus.OK).json({ message: 'Password Changed Successfully' });
         })
           .catch((error) => {
-            res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error Occured' });
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error Occured' });
           });
       });
   }

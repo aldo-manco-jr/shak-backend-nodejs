@@ -5,6 +5,9 @@ const ImagesMiddlewares = require('../controllers/images');
 const AuthHelper = require('../helpers/AuthHelper');
 
 
+// Images List in the Album of Specified User
+router.get('/images-list/:username', AuthHelper.VerifyToken, ImagesMiddlewares.GetAllUserImages);
+
 // Logged User Upload an Image in His Album
 router.post('/upload-image', AuthHelper.VerifyToken, ImagesMiddlewares.UploadUserImage);
 

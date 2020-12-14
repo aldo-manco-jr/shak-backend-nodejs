@@ -5,6 +5,9 @@ const NotificationsMiddlewares = require('../controllers/notifications');
 const AuthHelper = require('../helpers/AuthHelper');
 
 
+// Notifications List of Logged User
+router.get('/notifications-list', AuthHelper.VerifyToken, NotificationsMiddlewares.GetAllNotifications);
+
 // Logged User Deletes Its Own Notification
 router.post('/notification/delete/:id', AuthHelper.VerifyToken, NotificationsMiddlewares.DeleteNotification);
 

@@ -315,6 +315,31 @@ module.exports = {
       });
   },
 
+  async GetAllPostComments(req, res) {
+
+    await posts.findOne({ _id: req.params.id })
+      .then((post) => {
+
+        let commentsExtractFunction = function() {
+          let commentsList = [];
+          if (typeof post.comments != 'undefined') {
+            for (let i = 0; i < post.comments.length; i++) {
+              commentsList.push(post.comments[i]);
+            }
+          }
+          return commentsList;
+        };
+
+        let commentsList = commentsExtractFunction();
+
+        res.status(HttpStatus.OK).json({ message: 'Comments List Related to Found Post', commentsList });
+      })
+      .catch(err =>
+        res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: 'Post Not Found' }));
+  },
+
   async AddComment(req, res) {
 
     const postId = req.body.postId;

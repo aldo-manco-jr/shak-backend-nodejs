@@ -4,6 +4,30 @@ const User = require('../models/userModels');
 
 module.exports = {
 
+  async GetAllNotifications(req, res) {
+
+    await User.findOne({ username: req.user.username })
+      .then((user) => {
+
+        let notificationsExtractFunction = function() {
+          let notificationsList = [];
+          if (typeof user.notifications != 'undefined') {
+            for (let i = 0; i < user.notifications.length; i++) {
+              notificationsList.push(user.notifications[i]);
+            }
+          }
+          return notificationsList;
+        };
+
+        let notificationsList = notificationsExtractFunction();
+
+        return res.status(HttpStatus.OK).json({ message: 'Get all logged user\'s notifications list', notificationsList });
+      })
+      .catch((error) => {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.details });
+      });
+  },
+
   async DeleteNotification(req, res) {
 
     await User.update({
@@ -83,10 +107,10 @@ module.exports = {
         }
       }
     ).then((userFoundByName) => {
-      return res.status(httpStatus.OK).json({ message: 'Notification sent' });
+      return res.status(HttpStatus.OK).json({ message: 'Notification sent' });
     })
       .catch((error) => {
-        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error Occured' });
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error Occured' });
       });
   },
 
