@@ -35,6 +35,21 @@ module.exports = {
       });
   },
 
+  async GetUserImageProfile(req, res) {
+
+    await User.findOne({ username: req.params.username })
+      .then((user) => {
+
+        let userProfileImageId = user.profileImageId;
+        let userProfileImageVersion = user.profileImageId;
+
+        return res.status(HttpStatus.OK).json({ message: 'Get user\'s profile image', userProfileImageId, userProfileImageVersion });
+      })
+      .catch((error) => {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.details });
+      });
+  },
+
   UploadUserImage(req, res) {
 
     cloudinary.uploader.upload(req.body.image, async (result) => {
