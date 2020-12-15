@@ -41,7 +41,7 @@ module.exports = {
       .then((user) => {
 
         let userProfileImageId = user.profileImageId;
-        let userProfileImageVersion = user.profileImageId;
+        let userProfileImageVersion = user.profileImageVersion;
 
         return res.status(HttpStatus.OK).json({ message: 'Get user\'s profile image', userProfileImageId, userProfileImageVersion });
       })
