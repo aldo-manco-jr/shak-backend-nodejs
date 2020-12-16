@@ -240,8 +240,10 @@ module.exports = {
 
   async RemovePost(req, res) {
 
+    const postId = req.params._id;
+
     await posts.deleteOne({
-      _id: req.body._id
+      _id: postId
     })
       .then(async () => {
         await users.updateOne({
@@ -249,7 +251,7 @@ module.exports = {
         }, {
           $pull: {
             posts: {
-              postId: req.body._id
+              postId: req.postId
             }
           }
         }).then(() => {
@@ -291,7 +293,7 @@ module.exports = {
 
   async RemoveLike(req, res) {
 
-    const postId = req.body._id;
+    const postId = req.params.postId;
 
     await posts.updateOne({
         _id: postId,
@@ -367,15 +369,15 @@ module.exports = {
 
   async RemoveComment(req, res) {
 
-    const { postId, comment } = req.body;
+    const { postid, commentid } = req.params;
 
     await posts.updateOne({
-        _id: postId
+        _id: postid
       },
       {
         $pull: {
           comments: {
-            _id: comment._id
+            _id: commentid
           }
         }
       })

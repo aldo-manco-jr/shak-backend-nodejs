@@ -184,13 +184,13 @@ module.exports = {
       }, {
         $pull: {
           following: {
-            userFollowed: req.body.userFollowed
+            userFollowed: req.params._id
           }
         }
       });
 
       await users.update({
-        _id: req.body.userFollowed
+        _id: req.params._id
       }, {
         $pull: {
           followers: {
