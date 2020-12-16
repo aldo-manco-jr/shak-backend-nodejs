@@ -141,7 +141,7 @@ module.exports = {
   async GetPost(req, res) {
     await posts.findOne({ _id: req.params.id })
       .populate('user_id')
-      .populate('comments.user_id')
+      //.populate('comments.user_id')
       //.sort({ 'comments.created_at': -1 })
       .then((post) => {
         res.status(HttpStatus.OK).json({ message: 'Post Found', post });

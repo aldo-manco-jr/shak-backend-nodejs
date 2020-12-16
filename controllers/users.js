@@ -11,12 +11,12 @@ module.exports = {
     await users.find({
       _id : {$ne: req.user._id}
     })
-      .populate('posts.postId')
-      .populate('following.userFollowed')
-      .populate('followers.follower')
-      .populate('chatList.receiverId')
-      .populate('chatList.msgId')
-      .populate('notifications.senderId')
+      // .populate('posts.postId')
+      // .populate('following.userFollowed')
+      // .populate('followers.follower')
+      // .populate('chatList.receiverId')
+      // .populate('chatList.msgId')
+      // .populate('notifications.senderId')
       .sort({ username: 1 })
       .then((allUsers) => {
         return res.status(HttpStatus.OK).json({ message: 'All Users', allUsers });
@@ -29,12 +29,12 @@ module.exports = {
   async GetUserById(req, res) {
 
     await users.findOne({ _id: req.params.id })
-      .populate('posts.postId')
-      .populate('following.userFollowed')
-      .populate('followers.follower')
-      .populate('chatList.receiverId')
-      .populate('chatList.msgId')
-      .populate('notifications.senderId')
+      // .populate('posts.postId')
+      // .populate('following.userFollowed')
+      // .populate('followers.follower')
+      // .populate('chatList.receiverId')
+      // .populate('chatList.msgId')
+      // .populate('notifications.senderId')
       .then((userFoundById) => {
         return res.status(HttpStatus.OK).json({ message: 'User by id', userFoundById });
       })
@@ -47,12 +47,12 @@ module.exports = {
 
     // username: { $ne: req.user.username }
     await users.findOne({ username: req.params.username })
-      .populate('posts.postId')
-      .populate('following.userFollowed')
-      .populate('followers.follower')
-      .populate('chatList.receiverId')
-      .populate('chatList.msgId')
-      .populate('notifications.senderId')
+      // .populate('posts.postId')
+      // .populate('following.userFollowed')
+      // .populate('followers.follower')
+      // .populate('chatList.receiverId')
+      // .populate('chatList.msgId')
+      // .populate('notifications.senderId')
       .then((userFoundByName) => {
         return res.status(HttpStatus.OK).json({ message: 'User by username', userFoundByName });
       })
@@ -111,7 +111,7 @@ module.exports = {
         return res.status(HttpStatus.OK).json({ message: 'Following Users', followingList });
       })
       .catch((error) => {
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'porcaccio olive' + error.details });
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'error occured' + error.details });
       });
   },
 

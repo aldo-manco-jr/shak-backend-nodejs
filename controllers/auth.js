@@ -64,7 +64,7 @@ module.exports = {
     const username = await users.findOne({ username: helpers.firstLetterUppercase(request.body.username) });
 
     if (username) {
-      return response.status(HttpStatus.CONFLICT).json({ message: 'Nome utente già esistente' });
+      return response.status(HttpStatus.FORBIDDEN).json({ message: 'Nome utente già esistente' });
     }
 
     return bcrypt.hash(value.password, 10, (error, hashedPassword) => {
@@ -123,7 +123,7 @@ module.exports = {
           .then((isPasswordCorrect) => {
 
             if (!isPasswordCorrect) {
-              response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Password non corretta.' });
+              response.status(HttpStatus.FORBIDDEN).json({ message: 'Password non corretta.' });
             }
 
             // token (jwt) => header.payload.signature
