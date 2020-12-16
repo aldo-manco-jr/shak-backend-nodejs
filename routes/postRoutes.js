@@ -21,13 +21,13 @@ router.get('/post/:id', AuthHelper.VerifyToken, PostsMiddlewares.GetPost);
 router.post('/post/add-post', AuthHelper.VerifyToken, PostsMiddlewares.AddPost);
 
 // Logged User Deletes Its Own Post
-router.post('/post/remove-post', AuthHelper.VerifyToken, PostsMiddlewares.RemovePost);
+router.delete('/post/remove-post/:postid', AuthHelper.VerifyToken, PostsMiddlewares.RemovePost);
 
 // Logged User Add a Specific Post In Its Favourites
 router.post('/post/add-like', AuthHelper.VerifyToken, PostsMiddlewares.AddLike);
 
 // Logged User Remove a Specific Post From Its Favourites
-router.post('/post/remove-like', AuthHelper.VerifyToken, PostsMiddlewares.RemoveLike);
+router.delete('/post/remove-like/:postid', AuthHelper.VerifyToken, PostsMiddlewares.RemoveLike);
 
 // Get Comments List Related to a Specific Post
 router.get('/comments-list/:id', AuthHelper.VerifyToken, PostsMiddlewares.GetAllPostComments);
@@ -36,7 +36,7 @@ router.get('/comments-list/:id', AuthHelper.VerifyToken, PostsMiddlewares.GetAll
 router.post('/post/add-comment', AuthHelper.VerifyToken, PostsMiddlewares.AddComment);
 
 // Logged User Delete Its Own Comment From a Post Submitted by a Following User
-router.post('/post/remove-comment', AuthHelper.VerifyToken, PostsMiddlewares.RemoveComment);
+router.delete('/post/remove-comment/:postid/:commentid', AuthHelper.VerifyToken, PostsMiddlewares.RemoveComment);
 
 
 module.exports = router;

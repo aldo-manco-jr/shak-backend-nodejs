@@ -13,7 +13,7 @@ router.get('/user/:id', AuthHelper.VerifyToken, UsersMiddlewares.GetUserById);
 router.get('/username/:username', AuthHelper.VerifyToken, UsersMiddlewares.GetUserByName);
 
 // Set Location of Logged User
-router.post('/user/location', AuthHelper.VerifyToken, UsersMiddlewares.SetUserLocation);
+router.put('/user/location/:iduser', AuthHelper.VerifyToken, UsersMiddlewares.SetUserLocation);
 
 // Check If Logged User is Following a Specific User
 router.get('/users/is-following/:username', AuthHelper.VerifyToken, UsersMiddlewares.IsFollowing);
@@ -28,7 +28,7 @@ router.get('/users/followers/:username', AuthHelper.VerifyToken, UsersMiddleware
 router.post('/follow-user', AuthHelper.VerifyToken, UsersMiddlewares.FollowUser);
 
 // Remove a Specific User from the Following Users List of Logged User
-router.post('/unfollow-user', AuthHelper.VerifyToken, UsersMiddlewares.UnfollowUser);
+router.delete('/unfollow-user/:userfollowed', AuthHelper.VerifyToken, UsersMiddlewares.UnfollowUser);
 
 
 module.exports = router;
