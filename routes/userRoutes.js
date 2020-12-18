@@ -25,10 +25,10 @@ router.get('/users/following/:username', AuthHelper.VerifyToken, UsersMiddleware
 router.get('/users/followers/:username', AuthHelper.VerifyToken, UsersMiddlewares.GetFollowers);
 
 // Add a Specific User to the Following Users List of Logged User
-router.post('/follow-user', AuthHelper.VerifyToken, UsersMiddlewares.FollowUser);
+router.post('/follow-user/:userFollowed', AuthHelper.VerifyToken, UsersMiddlewares.FollowUser);
 
 // Remove a Specific User from the Following Users List of Logged User
-router.delete('/unfollow-user/:userfollowed', AuthHelper.VerifyToken, UsersMiddlewares.UnfollowUser);
+router.delete('/follow-user/:userFollowed', AuthHelper.VerifyToken, UsersMiddlewares.UnfollowUser);
 
 
 module.exports = router;

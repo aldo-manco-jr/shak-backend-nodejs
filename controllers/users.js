@@ -139,17 +139,17 @@ module.exports = {
 
       await users.update({
         _id: req.user._id,
-        'following.userFollowed': { $ne: req.body.userFollowed }
+        'following.userFollowed': { $ne: req.params.userFollowed }
       }, {
         $push: {
           following: {
-            userFollowed: req.body.userFollowed
+            userFollowed: req.params.userFollowed
           }
         }
       });
 
       await users.update({
-        _id: req.body.userFollowed,
+        _id: req.params.userFollowed,
         'followers.follower': { $ne: req.user._id }
       }, {
         $push: {
@@ -184,13 +184,13 @@ module.exports = {
       }, {
         $pull: {
           following: {
-            userFollowed: req.params._id
+            userFollowed: req.params.userFollowed
           }
         }
       });
 
       await users.update({
-        _id: req.params._id
+        _id: req.params.userFollowed
       }, {
         $pull: {
           followers: {
