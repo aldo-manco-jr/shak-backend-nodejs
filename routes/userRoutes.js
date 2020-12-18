@@ -9,26 +9,26 @@ const AuthHelper = require('../helpers/AuthHelper');
 router.get('/users', AuthHelper.VerifyToken, UsersMiddlewares.GetAllUsers);
 
 // Get a Single User by Its Primary Key (Id, Username)
-router.get('/user/:id', AuthHelper.VerifyToken, UsersMiddlewares.GetUserById);
-router.get('/username/:username', AuthHelper.VerifyToken, UsersMiddlewares.GetUserByName);
+router.get('/user/id/:id', AuthHelper.VerifyToken, UsersMiddlewares.GetUserById);
+router.get('/user/username/:username', AuthHelper.VerifyToken, UsersMiddlewares.GetUserByName);
 
 // Set Location of Logged User
-router.put('/user/location/:iduser', AuthHelper.VerifyToken, UsersMiddlewares.SetUserLocation);
+router.put('/user/location/:id', AuthHelper.VerifyToken, UsersMiddlewares.SetUserLocation);
 
 // Check If Logged User is Following a Specific User
-router.get('/users/is-following/:username', AuthHelper.VerifyToken, UsersMiddlewares.IsFollowing);
+router.get('/user/is-following/:username', AuthHelper.VerifyToken, UsersMiddlewares.IsFollowing);
 
 // Get Following Users List of Logged User
-router.get('/users/following/:username', AuthHelper.VerifyToken, UsersMiddlewares.GetFollowing);
+router.get('/user/following/:username', AuthHelper.VerifyToken, UsersMiddlewares.GetFollowing);
 
 // Get Followers Users List of Logged User
-router.get('/users/followers/:username', AuthHelper.VerifyToken, UsersMiddlewares.GetFollowers);
+router.get('/user/followers/:username', AuthHelper.VerifyToken, UsersMiddlewares.GetFollowers);
 
 // Add a Specific User to the Following Users List of Logged User
-router.post('/follow-user/:userFollowed', AuthHelper.VerifyToken, UsersMiddlewares.FollowUser);
+router.post('/user/follow/:userFollowed', AuthHelper.VerifyToken, UsersMiddlewares.FollowUser);
 
 // Remove a Specific User from the Following Users List of Logged User
-router.delete('/follow-user/:userFollowed', AuthHelper.VerifyToken, UsersMiddlewares.UnfollowUser);
+router.delete('/user/follow/:userFollowed', AuthHelper.VerifyToken, UsersMiddlewares.UnfollowUser);
 
 
 module.exports = router;

@@ -21,7 +21,4 @@ router.post('/mark-all', AuthHelper.VerifyToken, NotificationsMiddlewares.MarkAl
 router.post('/user/view-profile', AuthHelper.VerifyToken, NotificationsMiddlewares.AddNotificationProfileViewed);
 
 
-// Deprecated Middlewares
-router.post('/mark/:id', AuthHelper.VerifyToken, NotificationsMiddlewares.MarkNotification);
-
 module.exports = router;

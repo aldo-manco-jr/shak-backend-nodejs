@@ -6,37 +6,37 @@ const AuthHelper = require('../helpers/AuthHelper');
 
 
 // Get All Posts Submitted by Following Users of Logged User
-router.get('/posts', AuthHelper.VerifyToken, PostsMiddlewares.GetAllFollowingUsersPosts);
+router.get('/streams', AuthHelper.VerifyToken, PostsMiddlewares.GetAllFollowingUsersPosts);
 
 // Get All New Posts When Someone Submit a New Post
-router.get('/posts/new/:created_at', AuthHelper.VerifyToken, PostsMiddlewares.GetAllNewPosts);
+router.get('/streams/new/:created_at', AuthHelper.VerifyToken, PostsMiddlewares.GetAllNewPosts);
 
 // Get All Posts From a Specific User
-router.get('/posts/:username', AuthHelper.VerifyToken, PostsMiddlewares.GetAllUserPosts);
+router.get('/streams/:username', AuthHelper.VerifyToken, PostsMiddlewares.GetAllUserPosts);
 
 // Get a Single Post
 router.get('/post/:id', AuthHelper.VerifyToken, PostsMiddlewares.GetPost);
 
 // Logged User Submit a New Post
-router.post('/post/add-post', AuthHelper.VerifyToken, PostsMiddlewares.AddPost);
+router.post('/post', AuthHelper.VerifyToken, PostsMiddlewares.AddPost);
 
 // Logged User Deletes Its Own Post
-router.delete('/post/remove-post/:postid', AuthHelper.VerifyToken, PostsMiddlewares.RemovePost);
+router.delete('/post/:id', AuthHelper.VerifyToken, PostsMiddlewares.RemovePost);
 
 // Logged User Add a Specific Post In Its Favourites
-router.post('/post/add-like', AuthHelper.VerifyToken, PostsMiddlewares.AddLike);
+router.post('/post/like', AuthHelper.VerifyToken, PostsMiddlewares.AddLike);
 
 // Logged User Remove a Specific Post From Its Favourites
-router.delete('/post/remove-like/:postid', AuthHelper.VerifyToken, PostsMiddlewares.RemoveLike);
+router.delete('/post/like/:postid', AuthHelper.VerifyToken, PostsMiddlewares.RemoveLike);
 
 // Get Comments List Related to a Specific Post
-router.get('/comments-list/:id', AuthHelper.VerifyToken, PostsMiddlewares.GetAllPostComments);
+router.get('/post/comments-list/:id', AuthHelper.VerifyToken, PostsMiddlewares.GetAllPostComments);
 
 // Logged User Add a Comment to a Post Submitted by a Following User
-router.post('/post/add-comment', AuthHelper.VerifyToken, PostsMiddlewares.AddComment);
+router.post('/post/comment', AuthHelper.VerifyToken, PostsMiddlewares.AddComment);
 
 // Logged User Delete Its Own Comment From a Post Submitted by a Following User
-router.delete('/post/remove-comment/:postid/:commentid', AuthHelper.VerifyToken, PostsMiddlewares.RemoveComment);
+router.delete('/post/comment/:postid/:commentid', AuthHelper.VerifyToken, PostsMiddlewares.RemoveComment);
 
 
 module.exports = router;
