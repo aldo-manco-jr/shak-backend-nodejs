@@ -21,13 +21,13 @@ router.get('/post/:id', AuthHelper.VerifyToken, PostsMiddlewares.GetPost);
 router.post('/post', AuthHelper.VerifyToken, PostsMiddlewares.AddPost);
 
 // Logged User Deletes Its Own Post
-router.delete('/post/:id', AuthHelper.VerifyToken, PostsMiddlewares.RemovePost);
+router.delete('/post/:postid', AuthHelper.VerifyToken, PostsMiddlewares.RemovePost);
 
 // Logged User Add a Specific Post In Its Favourites
 router.post('/post/like', AuthHelper.VerifyToken, PostsMiddlewares.AddLike);
 
 // Logged User Remove a Specific Post From Its Favourites
-router.delete('/post/like/:postid', AuthHelper.VerifyToken, PostsMiddlewares.RemoveLike);
+router.delete('/post/like/:postId', AuthHelper.VerifyToken, PostsMiddlewares.RemoveLike);
 
 // Get Comments List Related to a Specific Post
 router.get('/post/comments-list/:id', AuthHelper.VerifyToken, PostsMiddlewares.GetAllPostComments);

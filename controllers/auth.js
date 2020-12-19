@@ -131,9 +131,12 @@ module.exports = {
               expiresIn: '8h'
             });
 
-            response.cookie('auth', token);
+            //response.cookie('auth', token);
 
-            return response.status(HttpStatus.OK).json({
+            console.log(userFound);
+              console.log(token);
+
+            response.status(HttpStatus.OK).json({
               message: 'Login effettuato con successo :)',
               userFound,
               token
@@ -141,7 +144,7 @@ module.exports = {
           });
       })
       .catch((error) => {
-        return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
+        response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
       });
   },
 

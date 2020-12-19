@@ -3,6 +3,9 @@ const HttpStatus = require('http-status-codes');
 const cloudinary = require('cloudinary');
 const moment = require('moment');
 const request = require('request');
+const mongoose = require('mongoose');
+//const ObjectId = mongoose.Schema.ObjectID;
+//const ObjectId = require('mongodb').ObjectID;
 
 cloudinary.config({
   cloud_name: 'dfn8llckr',
@@ -52,22 +55,35 @@ module.exports = {
           }
         ]
       })
+        .lean()
         .populate('user_id')
-        .sort({ created_at: -1 });
+        .sort({ created_at: -1 })
+        .then((posts) => {
+            for (let i = 0; i < posts.length; i++) {
+              posts[i].is_liked = posts[i].likes.some(like => like.username === req.user.username);
+            }
 
-      /*    //codice precedente che non tiene conto dei following
-            const allPosts = await posts.find({
-              created_at: {$gte: oneMonthAgo.toDate()}
-            })
-              .populate('user_id')
-              .sort({ created_at: -1 });*/
+            return posts;
+          }).catch(err => {
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: 'Error occured'})
+          });
 
       const top = await posts.find({
         'likes.username': { $eq: req.user.username },
         created_at: { $gte: oneMonthAgo.toDate() }
       })
+        .lean()
         .populate('user_id')
-        .sort({ created_at: -1 });
+        .sort({ created_at: -1 })
+        .then((posts) => {
+            for (let i = 0; i < posts.length; i++) {
+              posts[i].is_liked = posts[i].likes.some(like => like.username === req.user.username);
+            }
+
+            return posts;
+          }).catch(err => {
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: 'Error occured'})
+          });
 
       if (loggedUser.city === '' && loggedUser.country === '') {
         request('http://geolocation-db.com/json/', { json: true }, async (err, res, body) => {
@@ -89,18 +105,64 @@ module.exports = {
 
   async GetAllNewPosts(req, res) {
 
-    const lastPostCreatedAt = moment(req.body.created_at, 'yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'');
+    let lastDate;
+    if (new Date(req.params.created_at) > new Date(1971)){
+      lastDate = moment(req.params.created_at).subtract(0, 'days');
+    } else {
+      lastDate = moment(new Date(0)).subtract(0, 'days');
+    }
+
+    console.log(lastDate.toDate());
 
     try {
-      const allNewPosts = await posts.find({
-        created_at: { $gte: lastPostCreatedAt.toDate() }
-      })
-        .populate('user_id')
-        .sort({ created_at: -1 });
+      const loggedUser = await users.findOne({
+        _id: req.user._id
+      });
 
-      return res.status(HttpStatus.OK).json({ message: 'New posts', allNewPosts });
+      let followingArray = function() {
+        let followingObjectArray = [];
+        if (typeof loggedUser.following != 'undefined') {
+          for (let i = 0; i < loggedUser.following.length; i++) {
+            followingObjectArray.push(loggedUser.following[i].userFollowed);
+          }
+        }
+
+        return followingObjectArray;
+      };
+
+      const following = followingArray();
+
+      // vengono presi tutti i post dell'utente che ha effettuato il login e dei suoi following
+      const allNewPosts = await posts.find({
+        $and: [
+          {
+            $or: [
+              { 'username': { $eq: req.user.username } },
+              { 'user_id': { $in: following } }
+            ]
+          },
+          {
+            created_at: { $gt: lastDate.toDate() }
+          }
+        ]
+      })
+          .lean()
+          .populate('user_id')
+          .sort({ created_at: -1 })
+          .then((posts) => {
+            for (let i = 0; i < posts.length; i++) {
+              posts[i].is_liked = posts[i].likes.some(like => like.username === req.user.username);
+            }
+
+            return posts;
+          }).catch(err => {
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: 'Error occured'})
+          });
+
+      console.log(allNewPosts);
+      res.status(HttpStatus.OK).json({ message: 'All user\'s posts', allNewPosts });
     } catch (err) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message });
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
     }
   },
 
@@ -129,14 +191,31 @@ module.exports = {
         username: req.params.username,
         created_at: { $gte: oneMonthAgo.toDate() }
       })
+        .lean() // importantissimo, alrimenti non è possibile cambiare il valore alle chiavi
         .populate('user_id')
-        .sort({ created_at: -1 });
+        .sort({ created_at: -1 })
+        .then((posts) => {
+          for (let i = 0; i < posts.length; i++) {
+            /*
+            if (posts[i].likes.length > 0 && posts[i].likes.some(like => like.username === req.user.username)) {
+              posts[i].likes = true;
+            } else {
+              posts[i].likes = false;
+            }
+             */
+            posts[i].is_liked = posts[i].likes.some(like => like.username === req.user.username);
+          }
+
+          return posts;
+        }).catch(err =>
+          res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' })
+        );
 
       return res.status(HttpStatus.OK).json({ message: 'All user\'s posts', userPosts });
     } catch (err) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
     }
-  },
+    },
 
   async GetPost(req, res) {
     await posts.findOne({ _id: req.params.id })
@@ -166,8 +245,8 @@ module.exports = {
 
     if (error && error.details) {
       return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json({ msg: error.details });
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ msg: error.details });
     }
 
     const body = {
@@ -180,23 +259,23 @@ module.exports = {
     if (req.body.post && !req.body.image) {
 
       posts.create(body)
-        .then(async post => {
-          await users.updateOne({
-            _id: req.user._id
-          }, {
-            $push: {
-              posts: {
-                postId: post._id,
-                post: req.body.post,
-                created_at: new Date()
+          .then(async post => {
+            await users.updateOne({
+              _id: req.user._id
+            }, {
+              $push: {
+                posts: {
+                  postId: post._id,
+                  post: req.body.post,
+                  created_at: new Date()
+                }
               }
-            }
-          });
-          res.status(HttpStatus.OK).json({ message: 'Post created successfully', post });
-        }).catch(err => {
+            });
+            res.status(HttpStatus.OK).json({ message: 'Post created successfully', post });
+          }).catch(err => {
         res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .json({ message: 'Error occured' });
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .json({ message: 'Error occured' });
       });
     }
 
@@ -214,33 +293,34 @@ module.exports = {
         };
 
         posts.create(reqBody)
-          .then(async post => {
-            await users.updateOne({
-                _id: req.user._id
-              }, {
-                $push: {
-                  posts: {
-                    postId: post._id,
-                    post: req.body.post,
-                    created_at: new Date()
+            .then(async post => {
+              await users.updateOne({
+                    _id: req.user._id
+                  }, {
+                    $push: {
+                      posts: {
+                        postId: post._id,
+                        post: req.body.post,
+                        created_at: new Date()
+                      }
+                    }
                   }
-                }
-              }
-            );
-            res.status(HttpStatus.OK).json({ message: 'Post created successfully', post });
-          })
-          .catch(err => {
-            res
-              .status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .json({ message: 'Error occured' });
-          });
+              );
+              res.status(HttpStatus.OK).json({ message: 'Post created successfully', post });
+            })
+            .catch(err => {
+              res
+                  .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                  .json({ message: 'Error occured' });
+            });
       });
     }
   },
 
+
   async RemovePost(req, res) {
 
-    const postId = req.params._id;
+    const postId = req.params.postid;
 
     await posts.deleteOne({
       _id: postId
