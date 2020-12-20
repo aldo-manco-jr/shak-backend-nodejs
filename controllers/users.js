@@ -58,7 +58,7 @@ module.exports = {
       });
   },
 
-  async GetUserByName(req, res) {
+  async GetUserByUsername(req, res) {
 //TODO
     // username: { $ne: req.user.username }
     await users.findOne({ username: req.params.username },
