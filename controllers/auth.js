@@ -112,7 +112,21 @@ module.exports = {
       response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Non sono ammessi campi vuoti.' });
     }
 
-    await users.findOne({ username: helpers.firstLetterUppercase(request.body.username) })
+    await users.findOne({ username: helpers.firstLetterUppercase(request.body.username) },
+        {
+            posts: 0,
+            notifications: 0,
+            following: 0,
+            followers: 0,
+            chatList: 0,
+            images: 0,
+            profileImageId: 0,
+            profileImageVersion: 0,
+            coverImageId: 0,
+            coverImageVersion: 0,
+            city: 0,
+            country: 0
+        })
       .then((userFound) => {
 
         if (!userFound) {
@@ -131,12 +145,9 @@ module.exports = {
               expiresIn: '8h'
             });
 
-            //response.cookie('auth', token);
+            response.cookie('auth', token);
 
-            console.log(userFound);
-              console.log(token);
-
-            response.status(HttpStatus.OK).json({
+            return response.status(HttpStatus.OK).json({
               message: 'Login effettuato con successo :)',
               userFound,
               token
@@ -144,7 +155,7 @@ module.exports = {
           });
       })
       .catch((error) => {
-        response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
+        return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
       });
   },
 

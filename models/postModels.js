@@ -14,12 +14,13 @@ const postSchema = mongoose.Schema({
             created_at: { type: Date, default: Date.now()}
         }
     ],
-    total_likes: { type: Number, default: 0 },
+    total_comments: { type: Number, default: 0 },
     likes: [
         {
             username: { type: String, default:''}
         }
     ],
+    total_likes: { type: Number, default: 0 },
     created_at: { type: Date, default: Date.now() }
 });
 

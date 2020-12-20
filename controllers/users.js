@@ -10,7 +10,15 @@ module.exports = {
 
     await users.find({
       _id : {$ne: req.user._id}
-    })
+    },
+        {
+          password: 0,
+          posts: 0,
+          notifications: 0,
+          following: 0,
+          followers: 0,
+          images: 0
+        })
       // .populate('posts.postId')
       // .populate('following.userFollowed')
       // .populate('followers.follower')
@@ -27,8 +35,15 @@ module.exports = {
   },
 
   async GetUserById(req, res) {
-
-    await users.findOne({ _id: req.params.id })
+//TODO
+    await users.findOne({ _id: req.params.id }, {
+      password: 0,
+      posts: 0,
+      notifications: 0,
+      following: 0,
+      followers: 0,
+      images: 0
+    })
       // .populate('posts.postId')
       // .populate('following.userFollowed')
       // .populate('followers.follower')
@@ -44,9 +59,17 @@ module.exports = {
   },
 
   async GetUserByName(req, res) {
-
+//TODO
     // username: { $ne: req.user.username }
-    await users.findOne({ username: req.params.username })
+    await users.findOne({ username: req.params.username },
+        {
+          password: 0,
+          posts: 0,
+          notifications: 0,
+          following: 0,
+          followers: 0,
+          images: 0
+        })
       // .populate('posts.postId')
       // .populate('following.userFollowed')
       // .populate('followers.follower')
@@ -101,10 +124,23 @@ module.exports = {
 
     const user = await users.findOne({
       username: req.params.username
+    }, {
+      password: 0,
+      posts: 0,
+      notifications: 0,
+      following: 0,
+      followers: 0,
+      images: 0
     });
 
     await users.find({
       'followers.follower': { $eq: user._id }
+    }, {
+      password: 0,
+      posts: 0,
+      notifications: 0,
+      following: 0,
+      images: 0
     })
       .sort({ username: 1 })
       .then((followingList) => {
@@ -119,10 +155,23 @@ module.exports = {
 
     const user = await users.findOne({
       username: req.params.username
+    }, {
+      password: 0,
+      posts: 0,
+      notifications: 0,
+      following: 0,
+      followers: 0,
+      images: 0
     });
 
     await users.find({
       'following.userFollowed': { $eq: user._id }
+    }, {
+      password: 0,
+      posts: 0,
+      notifications: 0,
+      followers: 0,
+      images: 0
     })
       .sort({ username: 1 })
       .then((followersList) => {

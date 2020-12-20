@@ -1,3 +1,33 @@
+/*TODO
+POST
+user_id: 0,
+username: 0,
+post:0,
+imageVersion
+imageId
+comments
+total_likes
+likes
+created_at
+total_comments:0
+
+USER
+username: 0,
+email: 0,
+password: 0,
+posts:0,
+following: 0,
+followers: 0,
+notifications: 0,
+profileImageId: 0,
+profileImageVersion: 0,
+coverImageId: 0,
+coverImageVersion: 0,
+images: 0,
+city: 0,
+country: 0
+*/
+//TODO AGGIUNGERE .limit(10) per prendere solo un parte dei documenti
 const Joi = require('joi');
 const HttpStatus = require('http-status-codes');
 const cloudinary = require('cloudinary');
@@ -19,13 +49,28 @@ const users = require('../models/userModels');
 module.exports = {
 
   async GetAllFollowingUsersPosts(req, res) {
-
+//TODO usare limit e restituirlo all'utente per sapere da dove cominciare a chiedere i dat
+// (l'utente poi in richiesta dovrà comunicare la data più vecchia e quella più nuova dei post)
     const today = moment().startOf('day');
     const oneMonthAgo = moment(today).subtract(31, 'days');
 
     try {
       const loggedUser = await users.findOne({
         _id: req.user._id
+      }, {
+        username: 0,
+        email: 0,
+        password: 0,
+        posts:0,
+        followers: 0,
+        notifications: 0,
+        profileImageId: 0,
+        profileImageVersion: 0,
+        coverImageId: 0,
+        coverImageVersion: 0,
+        images: 0,
+        city: 0,
+        country: 0
       });
 
       let followingArray = function() {
@@ -54,13 +99,17 @@ module.exports = {
             created_at: { $gte: oneMonthAgo.toDate() }
           }
         ]
+      }, {
+        comments: 0
       })
         .lean()
-        .populate('user_id')
+        .populate('user_id', {'email':0, 'password':0, 'posts':0, 'followers':0, 'following':0,
+          'notifications':0, 'chatList':0, 'images':0})
         .sort({ created_at: -1 })
         .then((posts) => {
             for (let i = 0; i < posts.length; i++) {
               posts[i].is_liked = posts[i].likes.some(like => like.username === req.user.username);
+              delete posts[i].likes;
             }
 
             return posts;
@@ -71,21 +120,27 @@ module.exports = {
       const top = await posts.find({
         'likes.username': { $eq: req.user.username },
         created_at: { $gte: oneMonthAgo.toDate() }
+      }, {
+        comments: 0,
+        likes: 0
       })
         .lean()
-        .populate('user_id')
+        .populate('user_id', {'email':0, 'password':0, 'posts':0, 'followers':0, 'following':0,
+          'notifications':0, 'chatList':0, 'images':0})
         .sort({ created_at: -1 })
         .then((posts) => {
             for (let i = 0; i < posts.length; i++) {
-              posts[i].is_liked = posts[i].likes.some(like => like.username === req.user.username);
+              // sono già stati estratti i preferiti, quindi hanno tutti un like da parte dell'utente
+              posts[i].is_liked = true;
             }
 
             return posts;
-          }).catch(err => {
+          }).catch((err) => {
             res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: 'Error occured'})
           });
 
       if (loggedUser.city === '' && loggedUser.country === '') {
+        //TODO a cosa serve?
         request('http://geolocation-db.com/json/', { json: true }, async (err, res, body) => {
 
           await users.updateOne({
@@ -97,9 +152,9 @@ module.exports = {
         });
       }
 
-      return res.status(HttpStatus.OK).json({ message: 'All posts', allPosts, top });
+      res.status(HttpStatus.OK).json({ message: 'All posts', allPosts, top });
     } catch (err) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
     }
   },
 
@@ -112,11 +167,24 @@ module.exports = {
       lastDate = moment(new Date(0)).subtract(0, 'days');
     }
 
-    console.log(lastDate.toDate());
-
     try {
       const loggedUser = await users.findOne({
         _id: req.user._id
+      }, {
+        username: 0,
+        email: 0,
+        password: 0,
+        posts:0,
+        followers: 0,
+        notifications: 0,
+        profileImageId: 0,
+        profileImageVersion: 0,
+        coverImageId: 0,
+        coverImageVersion: 0,
+        images: 0,
+        city: 0,
+        country: 0,
+        chatList: 0
       });
 
       let followingArray = function() {
@@ -145,41 +213,20 @@ module.exports = {
             created_at: { $gt: lastDate.toDate() }
           }
         ]
-      })
+      }, {
+        comments: 0,
+        likes: 0
+      })// non serve che si controllano i like perchè sono nuovi messaggi, quindi non possiamo aver messo like
           .lean()
-          .populate('user_id')
-          .sort({ created_at: -1 })
-          .then((posts) => {
-            for (let i = 0; i < posts.length; i++) {
-              posts[i].is_liked = posts[i].likes.some(like => like.username === req.user.username);
-            }
+          .populate('user_id', {'email':0, 'password':0, 'posts':0, 'followers':0, 'following':0,
+            'notifications':0, 'chatList':0, 'images':0})
+          .sort({ created_at: -1 });
 
-            return posts;
-          }).catch(err => {
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: 'Error occured'})
-          });
-
-      console.log(allNewPosts);
-      res.status(HttpStatus.OK).json({ message: 'All user\'s posts', allNewPosts });
-    } catch (err) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
-    }
-  },
-
-  /*async GetAllNewPosts(req, res) {
-    const lastMessageTime = moment(req.params.created_at);
-
-    try {
-      const allNewPosts = await posts.find({
-        created_at: { $gt: lastMessageTime.toDate() }//oneMonthAgo.toDate()}
-      })
-        .populate('user_id')
-        .sort({ created_at: -1 });
-      return res.status(HttpStatus.OK).json({ message: 'All new posts', allNewPosts });
+      return res.status(HttpStatus.OK).json({ message: 'All user\'s posts', allNewPosts });
     } catch (err) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
     }
-  },*/
+  },
 
   async GetAllUserPosts(req, res) {
 
@@ -190,9 +237,12 @@ module.exports = {
       const userPosts = await posts.find({
         username: req.params.username,
         created_at: { $gte: oneMonthAgo.toDate() }
+      }, {
+        comments: 0
       })
         .lean() // importantissimo, alrimenti non è possibile cambiare il valore alle chiavi
-        .populate('user_id')
+        .populate('user_id', {'email':0, 'password':0, 'posts':0, 'followers':0, 'following':0,
+            'notifications':0, 'chatList':0, 'images':0})
         .sort({ created_at: -1 })
         .then((posts) => {
           for (let i = 0; i < posts.length; i++) {
@@ -204,6 +254,7 @@ module.exports = {
             }
              */
             posts[i].is_liked = posts[i].likes.some(like => like.username === req.user.username);
+            delete posts[i].likes;
           }
 
           return posts;
@@ -218,6 +269,8 @@ module.exports = {
     },
 
   async GetPost(req, res) {
+    console.log("non sono usato");
+    /*TODO NON USATO
     await posts.findOne({ _id: req.params.id })
       .populate('user_id')
       //.populate('comments.user_id')
@@ -229,6 +282,7 @@ module.exports = {
         res
           .status(HttpStatus.NOT_FOUND)
           .json({ message: 'Post Not Found' }));
+     */
   },
 
   AddPost(req, res) {
@@ -399,27 +453,29 @@ module.exports = {
 
   async GetAllPostComments(req, res) {
 
-    await posts.findOne({ _id: req.params.id })
-      .then((post) => {
-
-        let commentsExtractFunction = function() {
+    await posts.findOne(
+        { _id: req.params.id },
+        {
+          user_id: 0,
+          username: 0,
+          post:0,
+          imageVersion:0,
+          imageId:0,
+          total_likes:0,
+          toal_comments: 0,
+          likes:0
+        })
+        .lean()
+        .then((post) => {
           let commentsList = [];
-          if (typeof post.comments != 'undefined') {
-            for (let i = 0; i < post.comments.length; i++) {
-              commentsList.push(post.comments[i]);
-            }
-          }
-          return commentsList;
-        };
+          commentsList = post.comments
 
-        let commentsList = commentsExtractFunction();
-
-        res.status(HttpStatus.OK).json({ message: 'Comments List Related to Found Post', commentsList });
-      })
-      .catch(err =>
-        res
-          .status(HttpStatus.NOT_FOUND)
-          .json({ message: 'Post Not Found' }));
+          res.status(HttpStatus.OK).json({ message: 'Comments List Related to Found Post', commentsList });
+        })
+        .catch(err =>
+            res
+                .status(HttpStatus.NOT_FOUND)
+                .json({ message: 'Post Not Found' }));
   },
 
   async AddComment(req, res) {
@@ -437,6 +493,9 @@ module.exports = {
             comment_text: req.body.comment,
             created_at: new Date()
           }
+        },
+        $inc: {
+          total_comments: 1
         }
       })
       .then(() => {
@@ -459,6 +518,9 @@ module.exports = {
           comments: {
             _id: commentid
           }
+        },
+        $inc: {
+          total_comments: -1
         }
       })
       .then(() => {
@@ -468,21 +530,4 @@ module.exports = {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
       });
   }
-
-  /*,
-
-  async GetFollowingPosts(req, res) {
-    const lastMessageTime = moment(req.params.created_at);
-
-    try {
-      const allNewPosts = await posts.find(
-          {
-      },
-          { projection: { }
-      )
-      return res.status(HttpStatus.OK).json({ message: 'All new posts', allNewPosts });
-    } catch (err) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
-    }
-  }*/
 };
