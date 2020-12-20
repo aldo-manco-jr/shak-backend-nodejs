@@ -320,7 +320,7 @@ module.exports = {
 
   async RemovePost(req, res) {
 
-    const postId = req.params.postid;
+    const postId = req.params.id;
 
     await posts.deleteOne({
       _id: postId

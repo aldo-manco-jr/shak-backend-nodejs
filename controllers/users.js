@@ -1,6 +1,5 @@
 const HttpStatus = require('http-status-codes');
 const moment = require('moment');
-const Joi = require('joi');
 
 const users = require('../models/userModels');
 
@@ -26,24 +25,7 @@ module.exports = {
       });
   },
 
-  async GetUserById(req, res) {
-
-    await users.findOne({ _id: req.params.id })
-      // .populate('posts.postId')
-      // .populate('following.userFollowed')
-      // .populate('followers.follower')
-      // .populate('chatList.receiverId')
-      // .populate('chatList.msgId')
-      // .populate('notifications.senderId')
-      .then((userFoundById) => {
-        return res.status(HttpStatus.OK).json({ message: 'User by id', userFoundById });
-      })
-      .catch((error) => {
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.details });
-      });
-  },
-
-  async GetUserByName(req, res) {
+  async GetUserByUsername(req, res) {
 
     // username: { $ne: req.user.username }
     await users.findOne({ username: req.params.username })

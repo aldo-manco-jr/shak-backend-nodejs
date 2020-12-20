@@ -6,13 +6,13 @@ const AuthHelper = require('../helpers/AuthHelper');
 
 
 // Get All Posts Submitted by Following Users of Logged User
-router.get('/streams', AuthHelper.VerifyToken, PostsMiddlewares.GetAllFollowingUsersPosts);
+router.get('/post/list/all', AuthHelper.VerifyToken, PostsMiddlewares.GetAllFollowingUsersPosts);
 
 // Get All New Posts When Someone Submit a New Post
-router.get('/streams/new/:created_at', AuthHelper.VerifyToken, PostsMiddlewares.GetAllNewPosts);
+router.get('/post/list/new/:created_at', AuthHelper.VerifyToken, PostsMiddlewares.GetAllNewPosts);
 
 // Get All Posts From a Specific User
-router.get('/streams/:username', AuthHelper.VerifyToken, PostsMiddlewares.GetAllUserPosts);
+router.get('/post/list/:username', AuthHelper.VerifyToken, PostsMiddlewares.GetAllUserPosts);
 
 // Get a Single Post
 router.get('/post/:id', AuthHelper.VerifyToken, PostsMiddlewares.GetPost);
@@ -21,7 +21,7 @@ router.get('/post/:id', AuthHelper.VerifyToken, PostsMiddlewares.GetPost);
 router.post('/post', AuthHelper.VerifyToken, PostsMiddlewares.AddPost);
 
 // Logged User Deletes Its Own Post
-router.delete('/post/:postid', AuthHelper.VerifyToken, PostsMiddlewares.RemovePost);
+router.delete('/post/:id', AuthHelper.VerifyToken, PostsMiddlewares.RemovePost);
 
 // Logged User Add a Specific Post In Its Favourites
 router.post('/post/like', AuthHelper.VerifyToken, PostsMiddlewares.AddLike);
@@ -30,7 +30,7 @@ router.post('/post/like', AuthHelper.VerifyToken, PostsMiddlewares.AddLike);
 router.delete('/post/like/:postId', AuthHelper.VerifyToken, PostsMiddlewares.RemoveLike);
 
 // Get Comments List Related to a Specific Post
-router.get('/post/comments-list/:id', AuthHelper.VerifyToken, PostsMiddlewares.GetAllPostComments);
+router.get('/post/comment/list/:id', AuthHelper.VerifyToken, PostsMiddlewares.GetAllPostComments);
 
 // Logged User Add a Comment to a Post Submitted by a Following User
 router.post('/post/comment', AuthHelper.VerifyToken, PostsMiddlewares.AddComment);
