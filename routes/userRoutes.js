@@ -6,23 +6,22 @@ const AuthHelper = require('../helpers/AuthHelper');
 
 
 // Get All Users Signed Up to SHAK
-router.get('/users', AuthHelper.VerifyToken, UsersMiddlewares.GetAllUsers);
+router.get('/user/list/all', AuthHelper.VerifyToken, UsersMiddlewares.GetAllUsers);
 
-// Get a Single User by Its Primary Key (Id, Username)
-router.get('/user/id/:id', AuthHelper.VerifyToken, UsersMiddlewares.GetUserById);
-router.get('/user/username/:username', AuthHelper.VerifyToken, UsersMiddlewares.GetUserByName);
+// Get a Single User by Its Alternative Key (username)
+router.get('/user/:username', AuthHelper.VerifyToken, UsersMiddlewares.GetUserByUsername);
 
 // Set Location of Logged User
 router.put('/user/location/:id', AuthHelper.VerifyToken, UsersMiddlewares.SetUserLocation);
 
 // Check If Logged User is Following a Specific User
-router.get('/user/is-following/:username', AuthHelper.VerifyToken, UsersMiddlewares.IsFollowing);
+router.get('/user/follow/:username', AuthHelper.VerifyToken, UsersMiddlewares.IsFollowing);
 
 // Get Following Users List of Logged User
-router.get('/user/following/:username', AuthHelper.VerifyToken, UsersMiddlewares.GetFollowing);
+router.get('/user/list/following/:username', AuthHelper.VerifyToken, UsersMiddlewares.GetFollowing);
 
 // Get Followers Users List of Logged User
-router.get('/user/followers/:username', AuthHelper.VerifyToken, UsersMiddlewares.GetFollowers);
+router.get('/user/list/followers/:username', AuthHelper.VerifyToken, UsersMiddlewares.GetFollowers);
 
 // Add a Specific User to the Following Users List of Logged User
 router.post('/user/follow/:userFollowed', AuthHelper.VerifyToken, UsersMiddlewares.FollowUser);

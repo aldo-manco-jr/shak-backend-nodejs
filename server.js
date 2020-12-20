@@ -45,13 +45,21 @@ const {User} = require('./helpers/UserClass');
 require('./socket/streams')(io, User, _);
 require('./socket/private')(io);
 
-// Express Routes Which Handles Http Request
+// Express Routes Which Handles Http Request from Android
 const authenticationRoutes  = require('./routes/authRoutes');
 const postsRoutes  = require('./routes/postRoutes');
 const usersRoutes = require('./routes/userRoutes');
 const notificationsRoutes = require('./routes/notificationsRoutes');
 const chatRoutes = require('./routes/messageRoutes');
 const imagesRoutes = require('./routes/imageRoutes');
+
+// Express Routes Which Handles Http Request from Angular
+const angularAuthenticationRoutes  = require('./routes-angular/authRoutes');
+const angularPostsRoutes  = require('./routes-angular/postRoutes');
+const angularUsersRoutes = require('./routes-angular/userRoutes');
+const angularFriendsRoutes = require('./routes-angular/friendsRoutes');
+const angularChatRoutes = require('./routes-angular/messageRoutes');
+const angularImagesRoutes = require('./routes-angular/imageRoutes');
 
 // Impostazione Permessi, Funzionalità API
 // app.use((req, res, next)  => {
@@ -78,13 +86,21 @@ mongoose.Promise = global.Promise;
 // Connect Server with Database with Data Defined in (databaseConfig)
 mongoose.connect(databaseConfig.url, {useNewUrlParser: true, useUnifiedTopology: true });
 
-// Routes used as Global Middlewares by Express
+// Routes used as Global Middlewares by Express for Android's HTTP Request
 app.use('/api/shak', authenticationRoutes);
 app.use('/api/shak', postsRoutes);
 app.use('/api/shak', usersRoutes);
 app.use('/api/shak', notificationsRoutes);
 app.use('/api/shak', chatRoutes);
 app.use('/api/shak', imagesRoutes);
+
+// Routes used as Global Middlewares by Express for Angular's HTTP Request
+app.use('/api/shak', angularAuthenticationRoutes);
+app.use('/api/shak', angularFriendsRoutes);
+app.use('/api/shak', angularImagesRoutes);
+app.use('/api/shak', angularPostsRoutes);
+app.use('/api/shak', angularUsersRoutes);
+app.use('/api/shak', angularChatRoutes);
 
 // Initialize Server
 server.listen(3000, () => {

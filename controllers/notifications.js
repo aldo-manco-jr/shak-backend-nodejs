@@ -1,4 +1,5 @@
 const HttpStatus = require('http-status-codes');
+const moment = require('moment');
 
 const User = require('../models/userModels');
 
@@ -12,7 +13,7 @@ module.exports = {
         let notificationsExtractFunction = function() {
           let notificationsList = [];
           if (typeof user.notifications != 'undefined') {
-            for (let i = 0; i < user.notifications.length; i++) {
+            for (let i = user.notifications.length-1; i >= 0; i--) {
               notificationsList.push(user.notifications[i]);
             }
           }
@@ -79,7 +80,7 @@ module.exports = {
       { arrayFilters: [{ 'elem.read': false }], multi: true }
     )
       .then(() => {
-        res.status(HttpStatus.OK).json({ message: ' marked all successfully ' });
+        res.status(HttpStatus.OK).json({ message: 'marked all notifications successfully ' });
       }).catch(err => {
         res
           .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -91,10 +92,10 @@ module.exports = {
 
     const dateValue = moment().format('YYYY-MM-DD');
 
-    await users.update({
-        _id: req.body.id,
-        'notifications.date': { $ne: [dateValue, ''] },
-        'notifications.senderId': { $ne: req.user._id }
+    await User.updateOne({
+        _id: req.params.id,
+        //'notifications.date': { $ne: [dateValue, ''] },
+        //'notifications.senderId': { $ne: req.user._id }
       }, {
         $push: {
           notifications: {
@@ -106,55 +107,11 @@ module.exports = {
           }
         }
       }
-    ).then((userFoundByName) => {
+    ).then(() => {
       return res.status(HttpStatus.OK).json({ message: 'Notification sent' });
     })
       .catch((error) => {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error Occured' });
       });
-  },
-
-  async MarkNotification(req, res) {
-
-    //se contiene deleteval verrà cancellata la notifica
-    if (!req.body.deleteValue) {
-      await User.updateOne({
-          _id: req.user._id,
-          'notifications._id': req.params.id
-        },
-        {
-          //settiamo il campo read di notifications in userModel.js
-          $set: { 'notifications.$.read': true }
-        }
-      )
-        .then(() => {
-          res.status(HttpStatus.OK).json({ message: ' marked as read' });
-        }).catch(err => {
-          res
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .json({ message: 'Error Occured' });
-        });
-
-    } else {
-
-      //eliminazione della notifica
-      await User.update({
-          _id: req.user._id,
-          'notifications._id': req.params.id
-        },
-        {
-          $pull: {
-            notifications: { _id: req.params.id }
-          }
-        }
-      )
-        .then(() => {
-          res.status(HttpStatus.OK).json({ message: ' Deleted Successfully' });
-        }).catch(err => {
-          res
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .json({ message: 'Error Occured' });
-        });
-    }
   }
 };
