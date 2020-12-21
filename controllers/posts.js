@@ -325,6 +325,7 @@ module.exports = {
                 }
               }
             });
+
             res.status(HttpStatus.OK).json({ message: 'Post created successfully', post });
           }).catch(err => {
         res
@@ -380,7 +381,6 @@ module.exports = {
       _id: postId
     })
       .then(async () => {
-        console.log("then");
         await users.updateOne({
           _id: req.user._id
         }, {
@@ -390,11 +390,8 @@ module.exports = {
             }
           }
         }).then(() => {
-          console.log("success");
           return res.status(HttpStatus.OK).json({ message: 'Post removed successfully' });
         }).catch((err) => {
-          console.log("err");
-          console.log(err);
           return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
         });
       })
