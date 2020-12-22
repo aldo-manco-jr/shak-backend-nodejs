@@ -82,8 +82,12 @@ module.exports = function(io, User, _) {
       io.to(socket.id).emit('refreshPage', {})
     });
 
-    socket.on('refresh', (data) => {
-      io.emit('refreshPage', {});
+    socket.on('refreshListAfterDeleteComment', (data) => {
+      io.emit('refreshRemovedCommentFromList', {});
+    });
+
+    socket.on('refreshListAfterInsertionComment', (data) => {
+      io.emit('refreshAddedCommentToList', {});
     });
 
     socket.on('online', (data, callback) => {
