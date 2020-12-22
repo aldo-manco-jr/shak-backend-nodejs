@@ -158,6 +158,126 @@ module.exports = {
     }
   },
 
+  async GetAllSearchedFollowingUsersPosts(req, res) {
+//TODO usare limit e restituirlo all'utente per sapere da dove cominciare a chiedere i dat
+// (l'utente poi in richiesta dovrà comunicare la data più vecchia e quella più nuova dei post)
+    const today = moment().startOf('day');
+    const oneMonthAgo = moment(today).subtract(31, 'days');
+
+    try {
+      const loggedUser = await users.findOne({
+        _id: req.user._id
+      }, {
+        username: 0,
+        email: 0,
+        password: 0,
+        posts: 0,
+        followers: 0,
+        notifications: 0,
+        profileImageId: 0,
+        profileImageVersion: 0,
+        coverImageId: 0,
+        coverImageVersion: 0,
+        images: 0,
+        city: 0,
+        country: 0
+      });
+
+      let followingArray = function() {
+        let followingObjectArray = [];
+        if (typeof loggedUser.following != 'undefined') {
+          for (let i = 0; i < loggedUser.following.length; i++) {
+            followingObjectArray.push(loggedUser.following[i].userFollowed);
+          }
+        }
+
+        return followingObjectArray;
+      };
+
+      const following = followingArray();
+
+      // vengono presi tutti i post dell'utente che ha effettuato il login e dei suoi following
+      const allPosts = await posts.find({
+        $and: [
+          {
+            $or: [
+              { 'username': { $eq: req.user.username } },
+              { 'user_id': { $in: following } }
+            ]
+          },
+          {
+            created_at: { $gte: oneMonthAgo.toDate() }
+          },
+          {
+            post: new RegExp(req.params.post, 'i')
+          }
+        ]
+      }, {
+        comments: 0
+      })
+        .lean()
+        .populate('user_id', {
+          'email': 0, 'password': 0, 'posts': 0, 'followers': 0, 'following': 0,
+          'notifications': 0, 'chatList': 0, 'images': 0
+        })
+        .sort({ created_at: -1 })
+        .then((posts) => {
+          for (let i = 0; i < posts.length; i++) {
+            posts[i].is_liked = posts[i].likes.some(like => like.username === req.user.username);
+            delete posts[i].likes;
+          }
+
+          return posts;
+        }).catch(err => {
+          res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
+        });
+
+      console.log(allPosts);
+
+      const top = await posts.find({
+        'likes.username': { $eq: req.user.username },
+        created_at: { $gte: oneMonthAgo.toDate() },
+        post: new RegExp(req.params.post, 'i')
+      }, {
+        comments: 0,
+        likes: 0
+      })
+        .lean()
+        .populate('user_id', {
+          'email': 0, 'password': 0, 'posts': 0, 'followers': 0, 'following': 0,
+          'notifications': 0, 'chatList': 0, 'images': 0
+        })
+        .sort({ created_at: -1 })
+        .then((posts) => {
+          for (let i = 0; i < posts.length; i++) {
+            // sono già stati estratti i preferiti, quindi hanno tutti un like da parte dell'utente
+            posts[i].is_liked = true;
+          }
+
+          return posts;
+        }).catch((err) => {
+          res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
+        });
+
+      if (loggedUser.city === '' && loggedUser.country === '') {
+        //TODO a cosa serve?
+        request('http://geolocation-db.com/json/', { json: true }, async (err, res, body) => {
+
+          await users.updateOne({
+            _id: req.user._id
+          }, {
+            city: body.city,
+            country: body.country_name
+          });
+        });
+      }
+
+      res.status(HttpStatus.OK).json({ message: 'All posts', allPosts, top });
+    } catch (err) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
+    }
+  },
+
   async GetAllNewPosts(req, res) {
 
     let lastDate;

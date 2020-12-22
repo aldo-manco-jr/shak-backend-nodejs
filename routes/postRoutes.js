@@ -8,6 +8,9 @@ const AuthHelper = require('../helpers/AuthHelper');
 // Get All Posts Submitted by Following Users of Logged User
 router.get('/post/list/all', AuthHelper.VerifyToken, PostsMiddlewares.GetAllFollowingUsersPosts);
 
+// Get All Posts Submitted by Following Users of Logged User Which Contains a String Written Into the Search Bar
+router.get('/post/list/all/:post', AuthHelper.VerifyToken, PostsMiddlewares.GetAllSearchedFollowingUsersPosts);
+
 // Get All New Posts When Someone Submit a New Post
 router.get('/post/list/new/:created_at', AuthHelper.VerifyToken, PostsMiddlewares.GetAllNewPosts);
 
