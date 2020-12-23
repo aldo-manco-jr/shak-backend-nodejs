@@ -6,7 +6,7 @@ const AuthHelper = require('../helpers/AuthHelper');
 
 
 // Get All Posts Submitted by Following Users of Logged User
-router.get('/post/list/all', AuthHelper.VerifyToken, PostsMiddlewares.GetAllFollowingUsersPosts);
+router.get('/post/list/all/:type/:created_at', AuthHelper.VerifyToken, PostsMiddlewares.GetAllFollowingUsersPosts);
 
 // Get All Posts Submitted by Following Users of Logged User Which Contains a String Written Into the Search Bar
 router.get('/post/list/all/:post', AuthHelper.VerifyToken, PostsMiddlewares.GetAllSearchedFollowingUsersPosts);
@@ -15,7 +15,7 @@ router.get('/post/list/all/:post', AuthHelper.VerifyToken, PostsMiddlewares.GetA
 router.get('/post/list/new/:created_at', AuthHelper.VerifyToken, PostsMiddlewares.GetAllNewPosts);
 
 // Get All Posts From a Specific User
-router.get('/post/list/:username', AuthHelper.VerifyToken, PostsMiddlewares.GetAllUserPosts);
+router.get('/post/list/:username/:created_at', AuthHelper.VerifyToken, PostsMiddlewares.GetAllUserPosts);
 
 // Get a Single Post
 router.get('/post/:id', AuthHelper.VerifyToken, PostsMiddlewares.GetPost);

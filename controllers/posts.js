@@ -33,7 +33,7 @@ const HttpStatus = require('http-status-codes');
 const cloudinary = require('cloudinary');
 const moment = require('moment');
 const request = require('request');
-const mongoose = require('mongoose');
+//const mongoose = require('mongoose');
 //const ObjectId = mongoose.Schema.ObjectID;
 //const ObjectId = require('mongodb').ObjectID;
 
@@ -49,10 +49,17 @@ const users = require('../models/userModels');
 module.exports = {
 
   async GetAllFollowingUsersPosts(req, res) {
-//TODO usare limit e restituirlo all'utente per sapere da dove cominciare a chiedere i dat
-// (l'utente poi in richiesta dovrà comunicare la data più vecchia e quella più nuova dei post)
-    const today = moment().startOf('day');
-    const oneMonthAgo = moment(today).subtract(31, 'days');
+
+    let lastDate;
+    if (req.params.created_at === "1970-01-01'T'00:00:01.000'Z'"){
+      // situazione originaria, occorre prendere i risultati più recenti
+      console.log("originaria");
+      lastDate = moment(Date.now()).subtract(0, 'days');
+    } else {
+      console.log("dal più vecchio");
+      // situazione derivata, occorre prendere i risultati più recenti più vecchi dall'ultimo messaggio visto
+      lastDate = moment(req.params.created_at).subtract(0, 'days');
+    }
 
     try {
       const loggedUser = await users.findOne({
@@ -87,58 +94,76 @@ module.exports = {
       const following = followingArray();
 
       // vengono presi tutti i post dell'utente che ha effettuato il login e dei suoi following
-      const allPosts = await posts.find({
-        $and: [
-          {
-            $or: [
-              { 'username': { $eq: req.user.username } },
-              { 'user_id': { $in: following } }
-            ]
-          },
-          {
-            created_at: { $gte: oneMonthAgo.toDate() }
-          }
-        ]
-      }, {
-        comments: 0
-      })
-        .lean()
-        .populate('user_id', {'email':0, 'password':0, 'posts':0, 'followers':0, 'following':0,
-          'notifications':0, 'chatList':0, 'images':0})
-        .sort({ created_at: -1 })
-        .then((posts) => {
-            for (let i = 0; i < posts.length; i++) {
-              posts[i].is_liked = posts[i].likes.some(like => like.username === req.user.username);
-              delete posts[i].likes;
+      let streamPosts = null;
+      if (req.params.type === 'all' || req.params.type === 'streams') {
+        console.log(req.params.type);
+        streamPosts = await posts.find({
+          $and: [
+            {
+              $or: [
+                {'username': {$eq: req.user.username}},
+                {'user_id': {$in: following}}
+              ]
+            },
+            {
+              created_at: {$lte: lastDate.toDate()}
             }
+          ]
+        }, {
+          comments: 0
+        })
+            .limit(5)
+            .lean()
+            .populate('user_id', {
+              'email': 0, 'password': 0, 'posts': 0, 'followers': 0, 'following': 0,
+              'notifications': 0, 'chatList': 0, 'images': 0
+            })
+            .sort({created_at: -1})
+            .then((posts) => {
+              for (let i = 0; i < posts.length; i++) {
+                posts[i].is_liked = posts[i].likes.some(like => like.username === req.user.username);
+                delete posts[i].likes;
+              }
 
-            return posts;
-          }).catch(err => {
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: 'Error occured'})
-          });
+              return posts;
+            }).catch(err => {
+              res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: 'Error occured'})
+            });
+      } else {
+        streamPosts = [];
+      }
 
-      const top = await posts.find({
-        'likes.username': { $eq: req.user.username },
-        created_at: { $gte: oneMonthAgo.toDate() }
-      }, {
-        comments: 0,
-        likes: 0
-      })
-        .lean()
-        .populate('user_id', {'email':0, 'password':0, 'posts':0, 'followers':0, 'following':0,
-          'notifications':0, 'chatList':0, 'images':0})
-        .sort({ created_at: -1 })
-        .then((posts) => {
-            for (let i = 0; i < posts.length; i++) {
-              // sono già stati estratti i preferiti, quindi hanno tutti un like da parte dell'utente
-              posts[i].is_liked = true;
-            }
+      let favouritePosts = null;
+      if (req.params.type === 'all' || req.params.type === 'favourites') {
+        console.log(req.params.type);
+        favouritePosts = await posts.find({
+          'likes.username': {$eq: req.user.username},
+          created_at: {$lte: lastDate.toDate()}
+        }, {
+          comments: 0,
+          likes: 0
+        })
+            .limit(5)
+            .lean()
+            .populate('user_id', {
+              'email': 0, 'password': 0, 'posts': 0, 'followers': 0, 'following': 0,
+              'notifications': 0, 'chatList': 0, 'images': 0
+            })
+            .sort({created_at: -1})
+            .then((posts) => {
+              for (let i = 0; i < posts.length; i++) {
+                // sono già stati estratti i preferiti, quindi hanno tutti un like da parte dell'utente
+                posts[i].is_liked = true;
+              }
 
-            return posts;
-          }).catch((err) => {
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: 'Error occured'})
-          });
-
+              return posts;
+            }).catch((err) => {
+              res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: 'Error occured'})
+            });
+      } else {
+        favouritePosts = [];
+      }
+/*
       if (loggedUser.city === '' && loggedUser.country === '') {
         //TODO a cosa serve?
         request('http://geolocation-db.com/json/', { json: true }, async (err, res, body) => {
@@ -150,9 +175,9 @@ module.exports = {
             country: body.country_name
           });
         });
-      }
+      }*/
 
-      res.status(HttpStatus.OK).json({ message: 'All posts', allPosts, top });
+      res.status(HttpStatus.OK).json({ message: 'All posts', streamPosts, favouritePosts });
     } catch (err) {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
     }
@@ -350,16 +375,28 @@ module.exports = {
 
   async GetAllUserPosts(req, res) {
 
-    const today = moment().startOf('day');
-    const oneMonthAgo = moment(today).subtract(31, 'days');
+    let lastDate;
+    if (req.params.created_at === "1970-01-01'T'00:00:01.000'Z'"){
+      // situazione originaria, occorre prendere i risultati più recenti
+      console.log("originaria");
+      lastDate = moment(Date.now()).subtract(0, 'days');
+    } else {
+      console.log("dal più vecchio");
+      // situazione derivata, occorre prendere i risultati più recenti più vecchi dall'ultimo messaggio visto
+      lastDate = moment(req.params.created_at).subtract(0, 'days');
+    }
+
+    console.log("lastdate oldPost");
+    console.log(lastDate);
 
     try {
       const userPosts = await posts.find({
         username: req.params.username,
-        created_at: { $gte: oneMonthAgo.toDate() }
+        created_at: { $lte: lastDate.toDate() }
       }, {
         comments: 0
       })
+        .limit(5)
         .lean() // importantissimo, alrimenti non è possibile cambiare il valore alle chiavi
         .populate('user_id', {'email':0, 'password':0, 'posts':0, 'followers':0, 'following':0,
             'notifications':0, 'chatList':0, 'images':0})
@@ -406,6 +443,8 @@ module.exports = {
   },
 
   AddPost(req, res) {
+    console.log("aggiungo per conti di ");
+    console.log(req.user.username);
 
     const schemaPost = Joi.object().keys({
       post: Joi.string().required()
@@ -491,7 +530,6 @@ module.exports = {
       });
     }
   },
-
 
   async RemovePost(req, res) {
 

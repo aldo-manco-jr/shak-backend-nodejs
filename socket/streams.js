@@ -83,11 +83,11 @@ module.exports = function(io, User, _) {
     });
 
     socket.on('refreshListAfterDeleteComment', (data) => {
-      io.emit('refreshRemovedCommentFromList', {});
+      io.to(socket.id).emit('refreshRemovedCommentFromList', {});
     });
 
     socket.on('refreshListAfterInsertionComment', (data) => {
-      io.emit('refreshAddedCommentToList', {});
+      io.to(socket.id).emit('refreshAddedCommentToList', {});
     });
 
     socket.on('online', (data, callback) => {
@@ -107,6 +107,7 @@ module.exports = function(io, User, _) {
         const distinctListOnlineUsers = _.uniq(listOnlineUsers);
         _.remove(distinctListOnlineUsers, (n) => (n === userDisconnected.userUsername));
 
+        //TODO questo emit verso tutti a cosa serve?
         io.emit('listOnlineUsers', distinctListOnlineUsers);
       }
     });

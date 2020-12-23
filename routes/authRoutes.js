@@ -23,5 +23,4 @@ router.post('/auth/login', AuthenticationMiddlewares.LoginUser);
 // Logged User Changes His Account Password
 router.post('/auth/change-password', AuthHelper.VerifyToken, AuthenticationMiddlewares.ChangePassword);
 
-
 module.exports = router;

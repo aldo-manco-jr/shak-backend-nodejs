@@ -145,7 +145,7 @@ module.exports = {
               expiresIn: '8h'
             });
 
-            response.cookie('auth', token);
+            //TODO APPARENTEMENTE NON SERVE response.cookie('auth', token);
 
             return response.status(HttpStatus.OK).json({
               message: 'Login effettuato con successo :)',
