@@ -53,10 +53,8 @@ module.exports = {
     let lastDate;
     if (req.params.created_at === "1970-01-01'T'00:00:01.000'Z'"){
       // situazione originaria, occorre prendere i risultati più recenti
-      console.log("originaria");
       lastDate = moment(Date.now()).subtract(0, 'days');
     } else {
-      console.log("dal più vecchio");
       // situazione derivata, occorre prendere i risultati più recenti più vecchi dall'ultimo messaggio visto
       lastDate = moment(req.params.created_at).subtract(0, 'days');
     }
@@ -96,7 +94,6 @@ module.exports = {
       // vengono presi tutti i post dell'utente che ha effettuato il login e dei suoi following
       let streamPosts = null;
       if (req.params.type === 'all' || req.params.type === 'streams') {
-        console.log(req.params.type);
         streamPosts = await posts.find({
           $and: [
             {
@@ -135,7 +132,6 @@ module.exports = {
 
       let favouritePosts = null;
       if (req.params.type === 'all' || req.params.type === 'favourites') {
-        console.log(req.params.type);
         favouritePosts = await posts.find({
           'likes.username': {$eq: req.user.username},
           created_at: {$lte: lastDate.toDate()}
@@ -257,8 +253,6 @@ module.exports = {
           res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
         });
 
-      console.log(allPosts);
-
       const top = await posts.find({
         'likes.username': { $eq: req.user.username },
         created_at: { $gte: oneMonthAgo.toDate() },
@@ -378,16 +372,11 @@ module.exports = {
     let lastDate;
     if (req.params.created_at === "1970-01-01'T'00:00:01.000'Z'"){
       // situazione originaria, occorre prendere i risultati più recenti
-      console.log("originaria");
       lastDate = moment(Date.now()).subtract(0, 'days');
     } else {
-      console.log("dal più vecchio");
       // situazione derivata, occorre prendere i risultati più recenti più vecchi dall'ultimo messaggio visto
       lastDate = moment(req.params.created_at).subtract(0, 'days');
     }
-
-    console.log("lastdate oldPost");
-    console.log(lastDate);
 
     try {
       const userPosts = await posts.find({
@@ -443,8 +432,6 @@ module.exports = {
   },
 
   AddPost(req, res) {
-    console.log("aggiungo per conti di ");
-    console.log(req.user.username);
 
     const schemaPost = Joi.object().keys({
       post: Joi.string().required()
