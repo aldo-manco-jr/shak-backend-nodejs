@@ -19,7 +19,7 @@ module.exports = {
         let imagesExtractFunction = function() {
           let imagesList = [];
           if (typeof user.images != 'undefined') {
-            for (let i = 0; i < user.images.length; i++) {
+            for (let i = user.images.length-1; i >= 0; i--) {
               imagesList.push(user.images[i]);
             }
           }

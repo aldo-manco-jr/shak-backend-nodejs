@@ -113,20 +113,20 @@ module.exports = {
     }
 
     await users.findOne({ username: helpers.firstLetterUppercase(request.body.username) },
-        {
-            posts: 0,
-            notifications: 0,
-            following: 0,
-            followers: 0,
-            chatList: 0,
-            images: 0,
-            profileImageId: 0,
-            profileImageVersion: 0,
-            coverImageId: 0,
-            coverImageVersion: 0,
-            city: 0,
-            country: 0
-        })
+      {
+        posts: 0,
+        notifications: 0,
+        following: 0,
+        followers: 0,
+        chatList: 0,
+        images: 0,
+        profileImageId: 0,
+        profileImageVersion: 0,
+        coverImageId: 0,
+        coverImageVersion: 0,
+        city: 0,
+        country: 0
+      })
       .then((userFound) => {
 
         if (!userFound) {
@@ -145,7 +145,7 @@ module.exports = {
               expiresIn: '8h'
             });
 
-            //TODO APPARENTEMENTE NON SERVE response.cookie('auth', token);
+            response.cookie('auth', token);
 
             return response.status(HttpStatus.OK).json({
               message: 'Login effettuato con successo :)',
@@ -155,6 +155,50 @@ module.exports = {
           });
       })
       .catch((error) => {
+        return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
+      });
+  },
+
+  async LoginUserFaceRecognition(request, response) {
+
+    if (!request.params.username) {
+      response.status(HttpStatus.NOT_FOUND).json({ message: 'No user associated with that face.' });
+    }
+
+    await users.findOne({ username: helpers.firstLetterUppercase(request.params.username) },
+      {
+        posts: 0,
+        notifications: 0,
+        following: 0,
+        followers: 0,
+        chatList: 0,
+        images: 0,
+        profileImageId: 0,
+        profileImageVersion: 0,
+        coverImageId: 0,
+        coverImageVersion: 0,
+        city: 0,
+        country: 0
+      })
+      .then((userFound) => {
+
+        if (!userFound) {
+          response.status(HttpStatus.NOT_FOUND).json({ message: 'No user associated with that face.' });
+        }
+
+        // token (jwt) => header.payload.signature
+        const token = jwt.sign({ data: userFound }, dbConfiguration.secret, {
+          expiresIn: '8h'
+        });
+
+        response.cookie('auth', token);
+
+        return response.status(HttpStatus.OK).json({
+          message: 'Login tramite riconoscimento facciale effettuato con successo :)',
+          userFound,
+          token
+        })
+      }).catch((error) => {
         return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
       });
   },

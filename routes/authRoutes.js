@@ -20,7 +20,11 @@ router.post('/auth/signup', AuthenticationMiddlewares.SignupUser);
 // Already Subscribed User Log In to SHAK
 router.post('/auth/login', AuthenticationMiddlewares.LoginUser);
 
+// Already Subscribed User Log In to SHAK through Face Recognition
+router.get('/auth/login/face-authentication/:username', AuthenticationMiddlewares.LoginUserFaceRecognition);
+
 // Logged User Changes His Account Password
 router.post('/auth/change-password', AuthHelper.VerifyToken, AuthenticationMiddlewares.ChangePassword);
+
 
 module.exports = router;

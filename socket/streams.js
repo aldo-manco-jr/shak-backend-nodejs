@@ -90,6 +90,10 @@ module.exports = function(io, User, _) {
       io.to(socket.id).emit('refreshAddedCommentToList', {});
     });
 
+    socket.on('refresh', () => {
+      io.to(socket.id).emit('refreshPage', {});
+    });
+
     socket.on('online', (data, callback) => {
       socket.username = data.username;
 
