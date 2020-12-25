@@ -52,22 +52,28 @@ module.exports = {
 
   UploadUserImage(req, res) {
 
+    let imageId;
+    let imageVersion;
+
     cloudinary.uploader.upload(req.body.image, async (result) => {
+
+      imageId = result.public_id;
+      imageVersion = result.version;
 
       await User.update({
         _id: req.user._id
       }, {
         $push: {
           images: {
-            imageId: result.public_id,
-            imageVersion: result.version
+            imageId: imageId,
+            imageVersion: imageVersion
           }
         }
       })
         .then(() =>
           res
             .status(HttpStatus.OK)
-            .json({ message: 'image uploaded successfully' })
+            .json({ message: 'image uploaded successfully', imageId, imageVersion })
         )
         .catch(err =>
           res.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -89,7 +95,7 @@ module.exports = {
       .then(() =>
         res
           .status(HttpStatus.OK)
-          .json({ message: 'image uploaded successfully' })
+          .json({ message: 'image uploaded successfully', imageId, imageVersion })
       )
       .catch(err =>
         res.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -110,7 +116,7 @@ module.exports = {
       .then(() =>
         res
           .status(HttpStatus.OK)
-          .json({ message: 'image uploaded successfully' })
+          .json({ message: 'image uploaded successfully', imageId, imageVersion})
       )
       .catch(err =>
         res.status(HttpStatus.INTERNAL_SERVER_ERROR)
