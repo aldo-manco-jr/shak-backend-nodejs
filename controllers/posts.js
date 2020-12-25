@@ -93,7 +93,8 @@ module.exports = {
 
       // vengono presi tutti i post dell'utente che ha effettuato il login e dei suoi following
       let streamPosts = null;
-      if (req.params.type === 'all' || req.params.type === 'streams') {
+      //if (req.params.type === 'all' || req.params.type === 'streams') {
+      if (req.params.type === 'streams') {
         streamPosts = await posts.find({
           $and: [
             {
@@ -131,7 +132,8 @@ module.exports = {
       }
 
       let favouritePosts = null;
-      if (req.params.type === 'all' || req.params.type === 'favourites') {
+      //if (req.params.type === 'all' || req.params.type === 'favourites') {
+      if (req.params.type === 'favourites') {
         favouritePosts = await posts.find({
           'likes.username': {$eq: req.user.username},
           created_at: {$lte: lastDate.toDate()}
