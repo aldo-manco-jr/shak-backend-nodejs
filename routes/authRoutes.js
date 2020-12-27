@@ -21,7 +21,7 @@ router.post('/auth/signup', AuthenticationMiddlewares.SignupUser);
 router.post('/auth/login', AuthenticationMiddlewares.LoginUser);
 
 // Already Subscribed User Log In to SHAK through Face Recognition
-router.get('/auth/login/face-authentication/:username', AuthenticationMiddlewares.LoginUserFaceRecognition);
+router.post('/auth/login/face-authentication', AuthenticationMiddlewares.LoginUserFaceRecognition);
 
 // Logged User Changes His Account Password
 router.post('/auth/change-password', AuthHelper.VerifyToken, AuthenticationMiddlewares.ChangePassword);

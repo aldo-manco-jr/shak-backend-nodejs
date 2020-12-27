@@ -23,6 +23,15 @@ const users = require('../models/userModels');
 const helpers = require('../helpers/helpers');
 const dbConfiguration = require('../config/secret');
 
+// cloudinary image cloud service import and setting
+const cloudinary = require('cloudinary');
+
+cloudinary.config({
+  cloud_name: 'dfn8llckr',
+  api_key: '575675419138435',
+  api_secret: 'lE_zxe8vYudPLseXYFAJojyyTpc'
+});
+
 module.exports = {
 
   /*
@@ -161,46 +170,55 @@ module.exports = {
 
   async LoginUserFaceRecognition(request, response) {
 
-    if (!request.params.username) {
-      response.status(HttpStatus.NOT_FOUND).json({ message: 'No user associated with that face.' });
-    }
+    let imageId;
+    let imageVersion;
 
-    await users.findOne({ username: helpers.firstLetterUppercase(request.params.username) },
-      {
-        posts: 0,
-        notifications: 0,
-        following: 0,
-        followers: 0,
-        chatList: 0,
-        images: 0,
-        profileImageId: 0,
-        profileImageVersion: 0,
-        coverImageId: 0,
-        coverImageVersion: 0,
-        city: 0,
-        country: 0
-      })
-      .then((userFound) => {
+    cloudinary.uploader.upload(request.body.image, async (result) => {
+      imageId = result.public_id;
+      imageVersion = result.version;
+      console.log("http://res.cloudinary.com/dfn8llckr/image/upload/v" + result.version + "/" + result.public_id);
 
-        if (!userFound) {
+      /*if (!request.params.username) {
           response.status(HttpStatus.NOT_FOUND).json({ message: 'No user associated with that face.' });
-        }
+      }*/
 
-        // token (jwt) => header.payload.signature
-        const token = jwt.sign({ data: userFound }, dbConfiguration.secret, {
-          expiresIn: '8h'
-        });
-
-        response.cookie('auth', token);
-
-        return response.status(HttpStatus.OK).json({
-          message: 'Login tramite riconoscimento facciale effettuato con successo :)',
-          userFound,
-          token
+      await users.findOne({ username: helpers.firstLetterUppercase("aldo") },
+        {
+          posts: 0,
+          notifications: 0,
+          following: 0,
+          followers: 0,
+          chatList: 0,
+          images: 0,
+          profileImageId: 0,
+          profileImageVersion: 0,
+          coverImageId: 0,
+          coverImageVersion: 0,
+          city: 0,
+          country: 0
         })
-      }).catch((error) => {
-        return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
-      });
+        .then((userFound) => {
+
+          if (!userFound) {
+            response.status(HttpStatus.NOT_FOUND).json({ message: 'No user associated with that face.' });
+          }
+
+          // token (jwt) => header.payload.signature
+          const token = jwt.sign({ data: userFound }, dbConfiguration.secret, {
+            expiresIn: '8h'
+          });
+
+          response.cookie('auth', token);
+
+          return response.status(HttpStatus.OK).json({
+            message: 'Login tramite riconoscimento facciale effettuato con successo :)',
+            userFound,
+            token,
+          })
+        }).catch((error) => {
+          return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
+        });
+    });
   },
 
   async ChangePassword(req, res) {
