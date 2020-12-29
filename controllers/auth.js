@@ -32,9 +32,8 @@ cloudinary.config({
   api_secret: 'lE_zxe8vYudPLseXYFAJojyyTpc'
 });
 
+// library to execute python script in nodejs
 const spawn = require("child_process").spawn;
-//const pythonFaceRecognitionProcess = spawn('python', ['./attendance_without_comments.py", "https://scontent-mxp1-1.xx.fbcdn.net/v/t31.0-8/665674_4151128774358_1620545370_o.jpg?_nc_cat=105&ccb=2&_nc_sid=09cbfe&_nc_ohc=eeuAIn-121wAX9EoqQD&_nc_ht=scontent-mxp1-1.xx&oh=f6721a379a5aeb61b818a3d5181ce11b&oe=600FB596']);
-const pythonFaceRecognitionProcess = spawn('python', ['hello.py']);
 
 module.exports = {
 
@@ -182,12 +181,19 @@ module.exports = {
       imageVersion = result.version;
       console.log("http://res.cloudinary.com/dfn8llckr/image/upload/v" + result.version + "/" + result.public_id);
 
-      //const pythonFaceRecognitionProcess = spawn('python', ["python/attendance_without_comments.py", "http://res.cloudinary.com/dfn8llckr/image/upload/v" + result.version + "/" + result.public_id]);
+      const pythonFaceRecognitionProcess = spawn('python', ['attendance_without_comments.py']);
 
       // python function link
       pythonFaceRecognitionProcess.stdout.on('data', (data) => {
-        // Do something with the data returned from python script
-        console.log(data.toString());
+        console.log(`stdout: ${data}`);
+      });
+
+      pythonFaceRecognitionProcess.stderr.on('data', (data) => {
+        console.error(`stderr: ${data}`);
+      });
+
+      pythonFaceRecognitionProcess.on('close', (code) => {
+        console.log(`child process exited with code: ${code}`);
       });
 
       /*if (!request.params.username) {

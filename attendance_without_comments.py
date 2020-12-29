@@ -19,7 +19,7 @@ def findFacesEncodings(imagesList):
 
 def getUserByFace():
 
-    URL = sys.argv[1]
+    URL = "https://res.cloudinary.com/dfn8llckr/image/upload/v1601987890/hsv9jhg9wm78ttrtgspx.jpg"
 
     f = open('photo_to_analyze.jpg', 'wb')
     f.write(request.urlopen(URL).read())
