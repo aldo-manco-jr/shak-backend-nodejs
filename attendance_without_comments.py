@@ -7,6 +7,7 @@ import urllib
 from datetime import datetime
 from urllib import request
 
+
 def findFacesEncodings(imagesList):
 
     facesListEncodingsList = []
@@ -17,29 +18,34 @@ def findFacesEncodings(imagesList):
         facesListEncodingsList.append(faceEncodingsList)
     return facesListEncodingsList
 
+
 def getUserByFace():
 
+    # URL = sys.argv[1]
     URL = "https://res.cloudinary.com/dfn8llckr/image/upload/v1601987890/hsv9jhg9wm78ttrtgspx.jpg"
 
     f = open('photo_to_analyze.jpg', 'wb')
     f.write(request.urlopen(URL).read())
     f.close()
 
-    pathImagesList = 'images-attendance'
+    PATH_PEOPLE_FOLDERS_LIST = 'images-attendance'
 
     imagesList = []
 
     namesFacesList = []
 
-    filenameImagesList = os.listdir(pathImagesList)
-    filenameImagesList.pop()
+    peopleFoldersList = os.listdir(PATH_PEOPLE_FOLDERS_LIST)
+    peopleFoldersList.pop()
 
-    print(filenameImagesList)
+    for personFolder in peopleFoldersList:
+        pathPersonPhotoFilenameList = PATH_PEOPLE_FOLDERS_LIST + "/" + personFolder
+        personPhotoFilenameList = os.listdir(pathPersonPhotoFilenameList)
 
-    for filenameImage in filenameImagesList:
-        currentImage = cv2.imread(f'{pathImagesList}/{filenameImage}')
-        imagesList.append(currentImage)
-        namesFacesList.append(os.path.splitext(filenameImage)[0])
+        for personPhotoFilename in personPhotoFilenameList:
+            currentImage = cv2.imread(f'{pathPersonPhotoFilenameList}/{personPhotoFilename}')
+            print(pathPersonPhotoFilenameList + "/" + personPhotoFilename)
+            imagesList.append(currentImage)
+            namesFacesList.append(os.path.splitext(personFolder))
 
     facesListEncodingsList = findFacesEncodings(imagesList)
     print('Encoding Complete')
@@ -66,8 +72,7 @@ def getUserByFace():
 
         if facesMatches[bestMatchIndex]:
 
-            bestMatchPersonName = namesFacesList[bestMatchIndex].upper()
-            print(bestMatchPersonName)
+            bestMatchPersonName = namesFacesList[bestMatchIndex][0]
 
             Y1, X2, Y2, X1 = currentImageFaceLocation
 
@@ -91,9 +96,8 @@ def getUserByFace():
                         (255, 255, 255),
                         2)
 
-            print(bestMatchPersonName)
-            sys.stdout.flush()
             return bestMatchPersonName
+
 
 username = getUserByFace()
 print(username)
