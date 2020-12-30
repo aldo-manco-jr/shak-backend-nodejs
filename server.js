@@ -86,6 +86,11 @@ mongoose.Promise = global.Promise;
 // Connect Server with Database with Data Defined in (databaseConfig)
 mongoose.connect(databaseConfig.url, {useNewUrlParser: true, useUnifiedTopology: true });
 
+const timeout = require('connect-timeout')
+
+app.use(timeout('60000s'))
+app.use(haltOnTimedout)
+
 // Routes used as Global Middlewares by Express for Android's HTTP Request
 app.use('/api/shak', authenticationRoutes);
 app.use('/api/shak', postsRoutes);
@@ -101,6 +106,10 @@ app.use('/api/shak', angularImagesRoutes);
 app.use('/api/shak', angularPostsRoutes);
 app.use('/api/shak', angularUsersRoutes);
 app.use('/api/shak', angularChatRoutes);
+
+function haltOnTimedout (req, res, next) {
+   if (!req.timedout) next()
+}
 
 // Initialize Server
 server.listen(3000, () => {

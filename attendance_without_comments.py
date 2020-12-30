@@ -3,8 +3,6 @@ import numpy as np
 import face_recognition
 import os
 import sys
-import urllib
-from datetime import datetime
 from urllib import request
 
 
@@ -21,8 +19,8 @@ def findFacesEncodings(imagesList):
 
 def getUserByFace():
 
-    # URL = sys.argv[1]
-    URL = "https://res.cloudinary.com/dfn8llckr/image/upload/v1601987890/hsv9jhg9wm78ttrtgspx.jpg"
+    URL = sys.argv[1]
+    # URL = "https://res.cloudinary.com/dfn8llckr/image/upload/v1601987890/hsv9jhg9wm78ttrtgspx.jpg"
 
     f = open('photo_to_analyze.jpg', 'wb')
     f.write(request.urlopen(URL).read())
@@ -43,12 +41,10 @@ def getUserByFace():
 
         for personPhotoFilename in personPhotoFilenameList:
             currentImage = cv2.imread(f'{pathPersonPhotoFilenameList}/{personPhotoFilename}')
-            print(pathPersonPhotoFilenameList + "/" + personPhotoFilename)
             imagesList.append(currentImage)
             namesFacesList.append(os.path.splitext(personFolder))
 
     facesListEncodingsList = findFacesEncodings(imagesList)
-    print('Encoding Complete')
 
     image = face_recognition.load_image_file('photo_to_analyze.jpg')
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -64,9 +60,6 @@ def getUserByFace():
         facesMatches = face_recognition.compare_faces(facesListEncodingsList, currentImageFaceEncodings)
 
         facesDistances = face_recognition.face_distance(facesListEncodingsList, currentImageFaceEncodings)
-
-        print(facesMatches)
-        print(f"{facesDistances}\n")
 
         bestMatchIndex = np.argmin(facesDistances)
 
