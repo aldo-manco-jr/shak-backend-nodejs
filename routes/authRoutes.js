@@ -20,6 +20,9 @@ router.post('/auth/signup', AuthenticationMiddlewares.SignupUser);
 // Already Subscribed User Log In to SHAK
 router.post('/auth/login', AuthenticationMiddlewares.LoginUser);
 
+// New User Sign Up to SHAK with Face Recognition
+router.post('/auth/signup/face-authentication', AuthenticationMiddlewares.SignupUserFaceRecognition);
+
 // Already Subscribed User Log In to SHAK through Face Recognition
 router.post('/auth/login/face-authentication', AuthenticationMiddlewares.LoginUserFaceRecognition);
 

@@ -172,6 +172,76 @@ module.exports = {
       });
   },
 
+  async SignupUserFaceRecognition(request, response) {
+
+    const userEmail = await users.findOne({ email: helpers.lowerCase(request.body.email) });
+
+    if (userEmail) {
+      return response.status(HttpStatus.CONFLICT).json({ message: 'Email già registrata' });
+    }
+
+    const username = await users.findOne({ username: helpers.firstLetterUppercase(request.body.username) });
+
+    if (username) {
+      return response.status(HttpStatus.FORBIDDEN).json({ message: 'Nome utente già esistente' });
+    }
+
+    let imageId;
+    let imageVersion;
+
+    cloudinary.uploader.upload(request.body.image, async (result) => {
+      imageId = result.public_id;
+      imageVersion = result.version;
+
+      URL = "http://res.cloudinary.com/dfn8llckr/image/upload/v" + result.version + "/" + result.public_id;
+      console.log(URL);
+
+      // python function link
+      exec(`npm run -s nopy -- register_new_user_face.py ${URL} ${request.body.username}`, (error, stdout, stderr) => {
+
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
+        }
+
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
+        }
+      });
+    });
+
+    return bcrypt.hash(request.body.password, 10, (error, hashedPassword) => {
+
+      if (error) {
+        response.status(HttpStatus.BAD_REQUEST).json({ message: 'Errore nella codifica della password' });
+      }
+
+      const newUser = {
+        username: helpers.firstLetterUppercase(request.body.username),
+        email: helpers.lowerCase(request.body.email),
+        password: hashedPassword
+      };
+
+      users.create(newUser)
+        .then((user) => {
+
+          // token (jwt) => header.payload.signature
+          const token = jwt.sign({ data: user }, dbConfiguration.secret, {
+            expiresIn: '8h'
+          });
+
+          response.cookie('auth', token);
+
+          response.status(HttpStatus.CREATED).json({ message: 'Utente creato con successo!', user, token });
+
+        })
+        .catch((error) => {
+          response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Errore interno. Riprova più tardi' });
+        });
+    });
+  },
+
   async LoginUserFaceRecognition(request, response) {
 
     let imageId;
@@ -204,20 +274,20 @@ module.exports = {
         console.log(`stdout: ,${stdout.split("\n")[0].trim()},`);
 
         users.findOne({ username: helpers.firstLetterUppercase(stdout.split("\n")[0].trim()) },
-            {
-              posts: 0,
-              notifications: 0,
-              following: 0,
-              followers: 0,
-              chatList: 0,
-              images: 0,
-              profileImageId: 0,
-              profileImageVersion: 0,
-              coverImageId: 0,
-              coverImageVersion: 0,
-              city: 0,
-              country: 0
-            })
+          {
+            posts: 0,
+            notifications: 0,
+            following: 0,
+            followers: 0,
+            chatList: 0,
+            images: 0,
+            profileImageId: 0,
+            profileImageVersion: 0,
+            coverImageId: 0,
+            coverImageVersion: 0,
+            city: 0,
+            country: 0
+          })
           .then((userFound) => {
 
             if (!userFound) {
@@ -237,8 +307,8 @@ module.exports = {
               token,
             })
           }).catch((error) => {
-            return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
-          });
+          return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
+        });
       });
     });
   },
