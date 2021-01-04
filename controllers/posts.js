@@ -220,7 +220,7 @@ module.exports = {
       const following = followingArray();
 
       // vengono presi tutti i post dell'utente che ha effettuato il login e dei suoi following
-      const allPosts = await posts.find({
+      const streamPosts = await posts.find({
         $and: [
           {
             $or: [
@@ -255,7 +255,7 @@ module.exports = {
           res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
         });
 
-      const top = await posts.find({
+      const favouritePost = await posts.find({
         'likes.username': { $eq: req.user.username },
         created_at: { $gte: oneMonthAgo.toDate() },
         post: new RegExp(req.params.post, 'i')
@@ -293,7 +293,7 @@ module.exports = {
         });
       }
 
-      res.status(HttpStatus.OK).json({ message: 'All posts', allPosts, top });
+      res.status(HttpStatus.OK).json({ message: 'All posts', streamPosts, favouritePost });
     } catch (err) {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error occured' });
     }
