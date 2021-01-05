@@ -33,8 +33,8 @@ cloudinary.config({
 });
 
 // library to execute python script in nodejs
-const spawn = require("child_process").spawn;
-const { exec } = require("child_process");
+const spawn = require('child_process').spawn;
+const { exec } = require('child_process');
 
 module.exports = {
 
@@ -193,7 +193,7 @@ module.exports = {
       imageId = result.public_id;
       imageVersion = result.version;
 
-      URL = "http://res.cloudinary.com/dfn8llckr/image/upload/v" + result.version + "/" + result.public_id;
+      URL = 'http://res.cloudinary.com/dfn8llckr/image/upload/v' + result.version + '/' + result.public_id;
       console.log(URL);
 
       // python function link
@@ -251,7 +251,7 @@ module.exports = {
       imageId = result.public_id;
       imageVersion = result.version;
 
-      URL = "http://res.cloudinary.com/dfn8llckr/image/upload/v" + result.version + "/" + result.public_id;
+      URL = 'http://res.cloudinary.com/dfn8llckr/image/upload/v' + result.version + '/' + result.public_id;
       console.log(URL);
 
       // python function link
@@ -271,9 +271,9 @@ module.exports = {
           return response.status(HttpStatus.NOT_FOUND).json({ message: 'No user associated with that face.' });
         }
 
-        console.log(`stdout: ,${stdout.split("\n")[0].trim()},`);
+        console.log(`stdout: ,${stdout.split('\n')[0].trim()},`);
 
-        users.findOne({ username: helpers.firstLetterUppercase(stdout.split("\n")[0].trim()) },
+        users.findOne({ username: helpers.firstLetterUppercase(stdout.split('\n')[0].trim()) },
           {
             posts: 0,
             notifications: 0,
@@ -304,12 +304,38 @@ module.exports = {
             return response.status(HttpStatus.OK).json({
               message: 'Login tramite riconoscimento facciale effettuato con successo :)',
               userFound,
-              token,
-            })
+              token
+            });
           }).catch((error) => {
           return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
         });
       });
+    });
+  },
+
+  async DeleteUser(request, response) {
+
+    exec(`npm run -s nopy -- delete_user.py ${request.user.username}`, (error, stdout, stderr) => {
+
+      if (error) {
+        console.log(`error: ${error.message}`);
+        return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
+      }
+
+      if (stderr) {
+        console.log(`stderr: ${stderr}`);
+        return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
+      }
+
+      if (!stdout) {}
+
+      users.deleteOne(request.user)
+        .then(() => {
+          response.status(HttpStatus.CREATED).json({ message: 'Utente rimosso con successo!' });
+        })
+        .catch(() => {
+          response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Errore interno. Riprova più tardi' });
+        });
     });
   },
 
