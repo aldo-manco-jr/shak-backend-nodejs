@@ -25,7 +25,7 @@
     "moment": "^2.27.0",
     "mongoose": "^5.9.10",
     "morgan": "^1.10.0",
-    "nodemon": "^2.0.4",
+    "nodemon": "^2.0.6",
     "nopy": "^0.2.7",
     "request": "^2.88.2",
     "socket.io": "^2.3.0"
