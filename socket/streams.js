@@ -19,14 +19,26 @@ module.exports = function(io, User, _) {
         // la room esiste ed è presente almeno un utente
         let clients = global_room.sockets;
 
-        users.findOne({ username: socket.username })
+        users.findOne({ username: socket.username },
+            {
+              email : 0,
+              password: 0,
+              posts: 0,
+              following: 0,
+              notifications: 0,
+              chatList: 0,
+              profileImageId: 0,
+              profileImageVersion: 0,
+              coverImageId: 0,
+              coverImageVersion: 0,
+              images: 0,
+              city: 0,
+              country: 0
+            })
             .populate('followers.follower')
             .then((user) => {
-              // vengono estratti tutti i follower eventualmente da avvisare (se connessi)
               for (let socketIdKey in clients) {
                 if (socketIdKey === socket.id){
-                  //TODO forse questo bug è presente solo sul mio computer, ma occorre verificare meglio
-
                   // è l'utente stesso che ha inviato il messaggio
                   continue;
                 }
@@ -34,9 +46,16 @@ module.exports = function(io, User, _) {
                 let followSocket = io.sockets.connected[socketIdKey];
 
                 if (typeof(followSocket) != 'undefined') {
-                  let isFollow = (followSocket.username === user.username);
-                  if (isFollow) {
-                    io.to(followSocket.id).emit('refreshListPosts', {});
+                  // vengono estratti tutti i follower eventualmente da avvisare (se connessi)
+                  for (var i = 0; i < user.followers.length; i++){
+                    let usernameFollow = user.followers[i].follower.username;
+                    let isFollow = (followSocket.username === usernameFollow);
+                    if (isFollow) {
+                      io.to(followSocket.id).emit('refreshListPosts', {});
+                      // avvisato l'utente viene rimosso dall'array tramite il suo indice
+                      user.followers.splice(i, 1);
+                      break;
+                    }
                   }
                 }
               }
