@@ -20,6 +20,7 @@ const jwt = require('jsonwebtoken');
 
 // importazione schema utente
 const users = require('../models/userModels');
+const posts = require('../models/postModels');
 const helpers = require('../helpers/helpers');
 const dbConfiguration = require('../config/secret');
 
@@ -325,11 +326,36 @@ module.exports = {
         return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Si è verificato un errore, riprovare più tardi.' });
       }
 
-      if (!stdout) {}
+      if (!stdout) {
+      }
 
-      users.deleteOne(request.user)
+      posts.deleteMany({ user_id: request.user._id })
         .then(() => {
-          response.status(HttpStatus.CREATED).json({ message: 'Utente rimosso con successo!' });
+              posts.updateOne({
+                'comments.username': { $eq: request.user.username }
+              },
+              {
+                $pull: {
+                  comments: {
+                    username: request.user.username
+                  }
+                },
+                $inc: {
+                  total_comments: -1
+                }
+              })
+              .then(() => {
+                users.deleteOne(request.user)
+                  .then(() => {
+                    response.status(HttpStatus.CREATED).json({ message: 'Utente rimosso con successo!' });
+                  })
+                  .catch(() => {
+                    response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Errore interno. Riprova più tardi' });
+                  });
+              })
+              .catch(() => {
+                return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Errore interno. Riprova più tardi' });
+              });
         })
         .catch(() => {
           response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Errore interno. Riprova più tardi' });

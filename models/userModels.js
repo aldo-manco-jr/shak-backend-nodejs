@@ -64,5 +64,10 @@ userSchema.statics.EncryptPassword = async function(password){
     return hash;
 }
 
+// userSchema.pre('remove', function(next) {
+//     this.model('Post').remove({ user_id: this._id }, next);
+//     next();
+// });
+
 // esportazione schema
 module.exports = mongoose.model('User', userSchema);
