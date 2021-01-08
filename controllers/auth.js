@@ -158,8 +158,6 @@ module.exports = {
               expiresIn: '8h'
             });
 
-            //response.cookie('auth', token);
-
             response.status(HttpStatus.OK).json({
               message: 'Login effettuato con successo :)',
               userFound,
