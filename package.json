@@ -8,7 +8,7 @@
     "nopenv": "nopenv",
     "nopy": "nopy",
     "npip": "npip",
-    "start": "node server.js"
+    "start": "pm2-runtime server.js"
   },
   "author": "",
   "license": "ISC",
