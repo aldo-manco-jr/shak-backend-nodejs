@@ -1,0 +1,39 @@
+version: "3"
+services:
+  backend:
+    container_name: backend
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "${PORT}:3000"
+    volumes:
+      - .:/app
+    links:
+      - mongodb
+    networks:
+      - mean-mongo-net
+  mongodb:
+    image: "mongo:latest"
+    container_name: mongodb
+    env_file:
+      - .env
+    restart: always
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      # - MONGODB_ENABLE_ADMIN=false
+    volumes:
+      - "./mongo-volume:/data/db"
+    networks:
+      - mean-mongo-net
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  mean-mongo-net:

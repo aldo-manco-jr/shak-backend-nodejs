@@ -15,6 +15,9 @@
 
    (nodemon)
       Package che permette al server ti rimanere sempre in ascolto
+
+   (dotenv)
+      Package che gestisce i file .env
  */
 
 // Libraries Imported
@@ -24,6 +27,31 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
 const _ = require('lodash');
+require("dotenv").config()
+
+//Mongo DB Config
+const username = process.env.MONGO_INITDB_ROOT_USERNAME
+const password = process.env.MONGO_INITDB_ROOT_PASSWORD
+const dbName = process.env.MONGO_INITDB_DATABASE
+
+const url = 'mongodb://' +
+    username + ':' +
+    password + '@' +
+    'mongodb' + ':' +
+    27017 + '/' +
+    dbName + '?authSource=' +
+    'admin'
+
+const mongoOptions = {
+   user: username,
+   pass: password,
+   dbName: dbName,
+   useNewUrlParser: true,
+   useUnifiedTopology: true,
+   useCreateIndex: true,
+   useFindAndModify: false,
+   autoIndex: false
+}
 
 // Creates API
 const app = express();
@@ -83,8 +111,15 @@ app.use(cookieParser());
 // Declares Return Data Type of Query Done With Mongoose
 mongoose.Promise = global.Promise;
 
-// Connect Server with Database with Data Defined in (databaseConfig)
-mongoose.connect(databaseConfig.url, {useNewUrlParser: true, useUnifiedTopology: true });
+// Connect Server with Database
+const LOG_TAG = '\t[MONGODB]\t|'
+mongoose.connect(url, mongoOptions)
+    .then(() => {
+       console.log(LOG_TAG + 'Connected')
+    })
+    .catch((error) => {
+       console.trace(error)
+    })
 
 const timeout = require('connect-timeout')
 
